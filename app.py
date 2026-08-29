@@ -319,7 +319,7 @@ elif selected_nav == "🧠 4-Model Ensemble & MC Dropout":
 
     with col2:
         st.subheader("Monte Carlo Dropout Uncertainty Distribution")
-        st.markdown(f"""
+        st.markdown(r"""
         During inference, **20 stochastic forward passes** are computed with active dropout.
         - **Empirical Mean ($\mu$):** `{pred_res['mean_score']} pts`
         - **Standard Deviation ($\sigma$):** `±{pred_res['std_dev']} pts`
@@ -572,7 +572,7 @@ elif selected_nav == "👥 75% Review: 3-Member Viva Guide":
 
     with tab1:
         st.subheader("Member 1: Machine Learning & Ensemble Architecture Lead")
-        st.markdown("""
+        st.markdown(r"""
         **Assigned Role & Completed Modules:**
         1. **Clinical Dataset Generator (`clinical_dataset.py`)**:
            - Generated 6,000 synthetic hybrid samples with epidemiological distributions (PHQ-9, GAD-7, ISI, SCARED) and SMOTE oversampling.
@@ -588,7 +588,7 @@ elif selected_nav == "👥 75% Review: 3-Member Viva Guide":
 
     with tab2:
         st.subheader("Member 2: NLP, Sentiment & Explainable AI (XAI) Lead")
-        st.markdown("""
+        st.markdown(r"""
         **Assigned Role & Completed Modules:**
         1. **Real-Time Clinical NLP Engine (`nlp_engine.py`)**:
            - Implemented 90+ positive/negative clinical dictionaries, 20 high-risk bigrams, intensifier multipliers, and negation handlers.
@@ -603,7 +603,7 @@ elif selected_nav == "👥 75% Review: 3-Member Viva Guide":
 
     with tab3:
         st.subheader("Member 3: Full-Stack Web Platform, Forecasting & Interoperability Lead")
-        st.markdown("""
+        st.markdown(r"""
         **Assigned Role & Completed Modules:**
         1. **Interactive Web Application (`app.py`)**:
            - Designed and developed the multi-view Streamlit/Python clinical dashboard with interactive Plotly visual analytics.
