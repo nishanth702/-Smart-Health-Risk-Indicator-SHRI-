@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Health Risk Indicator (SHRI) - Clinical Decision Support Portal</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js CDN for interactive charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">🧠</div>
+                <div class="brand-text">
+                    <h2>SHRI Portal</h2>
+                    <span>Smart Health Risk Indicator · v3.0</span>
+                </div>
+            </div>
+
+            <div class="patient-preset-box">
+                <label for="patient-select">Select Patient Preset:</label>
+                <select id="patient-select">
+                    <option value="pooja">Pooja Patel (16y, High Risk)</option>
+                    <option value="aarav">Aarav Sharma (14y, Mild Anxiety)</option>
+                    <option value="rohan">Rohan Verma (12y, Baseline)</option>
+                </select>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="assessment">
+                    <span class="icon">🩺</span> Live Assessment
+                </button>
+                <button class="nav-item" data-tab="ensemble">
+                    <span class="icon">🧠</span> 4-Model Ensemble & MC
+                </button>
+                <button class="nav-item" data-tab="shap">
+                    <span class="icon">🔍</span> SHAP Explainability
+                </button>
+                <button class="nav-item" data-tab="trajectory">
+                    <span class="icon">📈</span> Trajectory & Anomaly
+                </button>
+                <button class="nav-item" data-tab="cbt">
+                    <span class="icon">💊</span> CBT Action Plans
+                </button>
+                <button class="nav-item" data-tab="viva">
+                    <span class="icon">👥</span> 75% Review (3 Members)
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="model-badge">
+                    <span class="dot"></span> Client-Side ML Active
+                </div>
+                <p>Zero Cloud Latency · Zero Data Leak</p>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- TOP BAR -->
+            <header class="topbar">
+                <div class="header-titles">
+                    <h1 id="page-title">🩺 Patient Assessment & Multi-Modal Scoring</h1>
+                    <p id="page-desc">Ingests psychometric items, lifestyle biomarkers, and real-time clinical NLP text.</p>
+                </div>
+                <div class="topbar-actions">
+                    <span class="badge" id="model-status-badge">4-Model Ensemble: Ready</span>
+                    <button class="btn btn-secondary" id="reset-btn">Reset Values</button>
+                </div>
+            </header>
+
+            <!-- TAB 1: LIVE ASSESSMENT -->
+            <section id="tab-assessment" class="tab-pane active">
+                <div class="grid-2col">
+                    <!-- Left: Questionnaire & Lifestyle Inputs -->
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>1. Standardized Clinical Questionnaires</h3>
+                            <span class="hint">0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day</span>
+                        </div>
+
+                        <div class="q-group">
+                            <h4>Depression & Mood Symptoms (PHQ-9 Items)</h4>
+                            <div class="slider-row">
+                                <label>Little interest or pleasure in doing things (Anhedonia):</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q1" min="0" max="3" value="3">
+                                    <span class="val" id="val-q1">3</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Feeling down, depressed, or hopeless:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q2" min="0" max="3" value="3">
+                                    <span class="val" id="val-q2">3</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Feeling bad about yourself, or that you are a failure:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q6" min="0" max="3" value="3">
+                                    <span class="val" id="val-q6">3</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="q-group">
+                            <h4>Anxiety & Somatic Symptoms (GAD-7 / SCARED Items)</h4>
+                            <div class="slider-row">
+                                <label>Feeling nervous, anxious, or on edge:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q8" min="0" max="3" value="2">
+                                    <span class="val" id="val-q8">2</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Not being able to stop or control worrying:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q9" min="0" max="3" value="2">
+                                    <span class="val" id="val-q9">2</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Trouble relaxing, feeling restless:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q10" min="0" max="3" value="2">
+                                    <span class="val" id="val-q10">2</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Somatic complaints (Headaches, nausea, fatigue):</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q5" min="0" max="3" value="2">
+                                    <span class="val" id="val-q5">2</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Trouble concentrating on schoolwork or reading:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q7" min="0" max="3" value="2">
+                                    <span class="val" id="val-q7">2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="q-group">
+                            <h4>Sleep Disruption (ISI Items)</h4>
+                            <div class="slider-row">
+                                <label>Trouble falling or staying asleep (Insomnia):</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q3" min="0" max="3" value="3">
+                                    <span class="val" id="val-q3">3</span>
+                                </div>
+                            </div>
+                            <div class="slider-row">
+                                <label>Feeling tired or having little energy during daytime:</label>
+                                <div class="slider-control">
+                                    <input type="range" id="q4" min="0" max="3" value="2">
+                                    <span class="val" id="val-q4">2</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-heading" style="margin-top:20px;">
+                            <h3>2. Behavioral & Lifestyle Biomarkers</h3>
+                        </div>
+                        <div class="grid-2col-compact">
+                            <div class="input-box">
+                                <label>Sleep Duration (Hours):</label>
+                                <input type="number" id="bio-sleep" value="4.0" step="0.5" min="2" max="14">
+                            </div>
+                            <div class="input-box">
+                                <label>Screen Time (Hours/Day):</label>
+                                <input type="number" id="bio-screen" value="9.0" step="0.5" min="0" max="16">
+                            </div>
+                            <div class="input-box">
+                                <label>Physical Activity (Mins/Day):</label>
+                                <input type="number" id="bio-exercise" value="5" step="5" min="0" max="180">
+                            </div>
+                            <div class="input-box">
+                                <label>Social Meetups (Peer count):</label>
+                                <input type="number" id="bio-social" value="1" step="1" min="0" max="10">
+                            </div>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="bio-appetite" checked>
+                            <label for="bio-appetite">Notable appetite / significant weight change reported</label>
+                        </div>
+                    </div>
+
+                    <!-- Right: NLP Journal + Real-Time Result Cards -->
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>3. Clinical Journal & Natural Language Processing</h3>
+                        </div>
+
+                        <div class="journal-box">
+                            <label for="journal-text">Patient's Daily Self-Report / Journal Entry:</label>
+                            <textarea id="journal-text" rows="4" placeholder="Type or paste patient self-report...">I can't cope with everything anymore. Feeling completely hopeless and exhausted. I don't want to get out of bed.</textarea>
+                            <div class="nlp-stats">
+                                <span>Sentiment: <b id="nlp-score">15/100</b></span>
+                                <span>Emotion: <b id="nlp-emotion">Distress</b></span>
+                                <span>Variance: <b id="nlp-variance">±12.4</b></span>
+                            </div>
+                        </div>
+
+                        <!-- Emergency Crisis Alert Box -->
+                        <div id="crisis-alert" class="crisis-banner">
+                            <div class="crisis-icon">🚨</div>
+                            <div class="crisis-body">
+                                <h4>IMMEDIATE CRISIS ALERT TRIGGERED</h4>
+                                <p id="crisis-reason">High-risk crisis language detected: <b>"can't cope", "hopeless"</b></p>
+                                <p class="hotline">Immediate clinical action required. Crisis Line: <b>Tele-MANAS (14416) / iCall (9152987821)</b></p>
+                            </div>
+                        </div>
+
+                        <div class="section-heading" style="margin-top:20px;">
+                            <h3>4. Smart Health Risk Assessment Result</h3>
+                        </div>
+
+                        <div class="score-card">
+                            <div class="score-header">
+                                <span class="badge badge-severe" id="risk-badge">Tier 4: High Risk</span>
+                                <span class="ci-text" id="ci-text">95% CI: [71.2 – 76.8]</span>
+                            </div>
+                            <div class="score-display">
+                                <span class="big-score" id="composite-score">74</span>
+                                <span class="max-score">/ 100</span>
+                            </div>
+                            <p class="score-desc" id="risk-desc">High clinical risk. Prioritize clinical safety review and formal psychiatric assessment.</p>
+                            <div class="uncertainty-pill" id="uncertainty-rating">
+                                🎯 <b>Uncertainty Rating:</b> High Confidence (std: ±1.4 pts)
+                            </div>
+                        </div>
+
+                        <div class="chart-container" style="margin-top:15px; height: 260px;">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: 4-MODEL ENSEMBLE -->
+            <section id="tab-ensemble" class="tab-pane">
+                <div class="grid-2col">
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>4-Model Stacked Ensemble Architecture</h3>
+                            <span class="hint">Specialist Networks + FusionNet Meta-Learner</span>
+                        </div>
+                        <table class="clinical-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Name</th>
+                                    <th>Domain Focus</th>
+                                    <th>Ensemble Weight</th>
+                                    <th>Score Output</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ensemble-table-body">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                        <div class="chart-container" style="margin-top:20px; height:240px;">
+                            <canvas id="ensembleBarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>Monte Carlo Dropout Uncertainty Distribution</h3>
+                            <span class="hint">20 Stochastic Passes at Test-Time</span>
+                        </div>
+                        <div class="info-card">
+                            <p>Standard neural networks are often overconfident. Our engine keeps dropout active during inference across <b>20 stochastic forward passes</b> to quantify model epistemic uncertainty.</p>
+                            <div class="mc-metrics">
+                                <div class="mc-metric-item">
+                                    <span class="label">Empirical Mean (μ):</span>
+                                    <span class="val" id="mc-mean">74.0 pts</span>
+                                </div>
+                                <div class="mc-metric-item">
+                                    <span class="label">Standard Deviation (σ):</span>
+                                    <span class="val" id="mc-std">±1.4 pts</span>
+                                </div>
+                                <div class="mc-metric-item">
+                                    <span class="label">95% Confidence Interval:</span>
+                                    <span class="val" id="mc-ci">[71.2 – 76.8]</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-container" style="margin-top:15px; height:240px;">
+                            <canvas id="mcHistogramChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: SHAP EXPLAINABILITY -->
+            <section id="tab-shap" class="tab-pane">
+                <div class="grid-2col">
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>Explainable AI (XAI) Decomposition</h3>
+                            <span class="hint">Permutation SHAP Feature Attribution</span>
+                        </div>
+                        <div class="shap-breakdown-card">
+                            <div class="shap-math-row">
+                                <div class="math-col">
+                                    <span class="label">ADMRI Score</span>
+                                    <span class="num text-accent" id="shap-score">74</span>
+                                </div>
+                                <div class="math-op">=</div>
+                                <div class="math-col">
+                                    <span class="label">Patient Baseline</span>
+                                    <span class="num text-muted" id="shap-baseline">50</span>
+                                </div>
+                                <div class="math-op">+</div>
+                                <div class="math-col">
+                                    <span class="label">Feature Impact</span>
+                                    <span class="num text-danger" id="shap-delta">+24.0</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="shap-lists">
+                            <div class="shap-subgroup">
+                                <h4>🔺 Top Factors Elevating Risk:</h4>
+                                <div id="risk-factors-list"></div>
+                            </div>
+                            <div class="shap-subgroup" style="margin-top:15px;">
+                                <h4>🛡️ Top Mitigating / Protective Factors:</h4>
+                                <div id="protective-factors-list"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>Feature Attribution Waterfall / Impact Chart</h3>
+                        </div>
+                        <div class="chart-container" style="height:420px;">
+                            <canvas id="shapBarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: TRAJECTORY & ANOMALY -->
+            <section id="tab-trajectory" class="tab-pane">
+                <div class="grid-2col">
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>Longitudinal Risk Progression & 30-Day Forecast</h3>
+                            <span class="hint">Linear Regression + EWMA (alpha=0.4)</span>
+                        </div>
+                        <div class="chart-container" style="height:340px;">
+                            <canvas id="trajectoryChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="panel">
+                        <div class="section-heading">
+                            <h3>Predictive Insights & Anomaly Triggers</h3>
+                        </div>
+                        <div class="forecast-box">
+                            <h4>Next-Session Projected Trajectory</h4>
+                            <div class="forecast-val" id="forecast-val">77.5 <span style="font-size:16px; color:#94A3B8;">pts</span></div>
+                            <p id="forecast-trend"><b>Trend:</b> Worsening (Upward Trend)</p>
+                            <p id="forecast-slope"><b>Slope:</b> +4.2 pts / session</p>
+                            <p class="ci-text" id="forecast-bounds">Bounds: [73.0 – 82.0]</p>
+                        </div>
+
+                        <div id="anomaly-box" class="anomaly-card">
+                            <h4>⚠️ Notable Statistical Shift Detected</h4>
+                            <p id="anomaly-msg">Score jumped +14 pts (2.3σ above moving baseline).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: CBT INTERVENTIONS -->
+            <section id="tab-cbt" class="tab-pane">
+                <div class="panel">
+                    <div class="section-heading">
+                        <h3>Evidence-Based CBT Intervention Protocols</h3>
+                        <span class="hint">Tailored to Dominant Symptom Profile</span>
+                    </div>
+                    <div class="cbt-cards-grid" id="cbt-container">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div class="export-banner" style="margin-top:25px;">
+                        <div>
+                            <h4>Export Standard Clinical Summary</h4>
+                            <p>Generates HL7 FHIR DiagnosticReport JSON standard payload for Electronic Health Records.</p>
+                        </div>
+                        <button class="btn btn-primary" id="export-json-btn">📥 Download FHIR JSON</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 6: 75% REVIEW & 3-MEMBER VIVA -->
+            <section id="tab-viva" class="tab-pane">
+                <div class="panel">
+                    <div class="section-heading">
+                        <h3>👥 75% Major Project Review: 3-Member Team Division</h3>
+                        <span class="hint">College Viva & Evaluation Guide</span>
+                    </div>
+
+                    <div class="review-status-card">
+                        <h4>75% Milestone Completion Status</h4>
+                        <p><b>Completed (75%):</b> 6,000 Sample Clinical Dataset Generator, 20D Multimodal Feature Pipeline, 4-Model Stacked Ensemble (DepNet, AnxNet, SleepNet, FusionNet), Monte Carlo Dropout (95% CI), Real-Time NLP Lexicon & Crisis Bigrams, Permutation SHAP XAI Engine, Interactive Web Portal.<br>
+                        <b>Pending (25%):</b> Multi-Hospital Real-World ROC-AUC Validation (10%), Audio/Voice Prosody Extraction via librosa (5%), FastAPI Production Microservices & Docker (5%), Multi-Language Localization in Hindi/Telugu (5%).</p>
+                    </div>
+
+                    <div class="viva-tabs">
+                        <button class="viva-tab-btn active" data-viva="m1">👤 Member 1 (ML & Ensemble)</button>
+                        <button class="viva-tab-btn" data-viva="m2">👤 Member 2 (NLP & XAI)</button>
+                        <button class="viva-tab-btn" data-viva="m3">👤 Member 3 (Full-Stack & CBT)</button>
+                        <button class="viva-tab-btn" data-viva="defense">🎯 Pending 25% Defense Script</button>
+                    </div>
+
+                    <div id="viva-m1" class="viva-content active">
+                        <h4>Member 1: Machine Learning & Ensemble Architecture Lead</h4>
+                        <p><b>Modules Completed:</b> 6,000 Hybrid Clinical Dataset Generator, 20D Multimodal Feature Matrix, DepNet (10 feats), AnxNet (11 feats), SleepNet (11 feats), FusionNet Meta-Learner (23 inputs), Monte Carlo Dropout (20 passes, 95% CI).</p>
+                        <div class="speech-quote">
+                            <b>What Member 1 Must Say to Examiners:</b><br>
+                            <i>"Respected Examiners, I am responsible for the core Machine Learning Pipeline, 20-dimensional Feature Engineering, and the 4-Model Stacked Ensemble with Uncertainty Quantification. Rather than a single generic neural network, I designed 3 specialized sub-networks: DepNet for depressive symptoms, AnxNet for generalized anxiety, and SleepNet for insomnia and lifestyle biomarkers. These specialist outputs are fused by FusionNet—a 23-input meta-learner using Stacked Generalization. To ensure medical safety, I integrated Monte Carlo Dropout with 20 stochastic passes, providing clinicians with an exact 95% Confidence Interval."</i>
+                        </div>
+                    </div>
+
+                    <div id="viva-m2" class="viva-content">
+                        <h4>Member 2: Clinical NLP, Sentiment & Explainable AI (XAI) Lead</h4>
+                        <p><b>Modules Completed:</b> Real-time Clinical NLP Sentiment Engine, 90-Word Lexicon, 20 Crisis Bigrams, Intensifier Multipliers, Negation Handling, Emergency Crisis UI Escalation Modal, Permutation SHAP Feature Attribution.</p>
+                        <div class="speech-quote">
+                            <b>What Member 2 Must Say to Examiners:</b><br>
+                            <i>"Respected Examiners, my contribution encompasses the Real-Time Clinical NLP Sentiment Engine, Crisis Keyword Escalation, and Explainable AI (XAI) using SHAP Permutation Attribution. Adolescent self-reports contain critical unstructured emotional context. I built a clinical sentiment engine with negation and intensifier sensitivity that instantly flags acute crisis bigrams like 'want to die' or 'can't cope'. Furthermore, to eliminate the black-box nature of deep learning, I implemented a SHAP-style permutation attribution engine that explains to clinicians exactly which features drove the risk score up or down."</i>
+                        </div>
+                    </div>
+
+                    <div id="viva-m3" class="viva-content">
+                        <h4>Member 3: Full-Stack Web Platform, Forecasting & Interoperability Lead</h4>
+                        <p><b>Modules Completed:</b> Responsive Web Application (HTML/CSS/JS), Longitudinal Trajectory Forecasting (LR + EWMA, alpha=0.4), Statistical Anomaly Detector (2σ), Evidence-Based CBT Planner, HL7 FHIR DiagnosticReport Export.</p>
+                        <div class="speech-quote">
+                            <b>What Member 3 Must Say to Examiners:</b><br>
+                            <i>"Respected Examiners, I developed the interactive Web Application, the Longitudinal Trajectory & Anomaly Detection system, and the Evidence-Based CBT Intervention Engine. I designed the responsive clinician portal allowing real-time assessment inputs and interactive visualizations. To track patient recovery over time, I implemented 30-day trajectory forecasting combining Linear Regression with Exponentially Weighted Moving Average (EWMA) to detect statistical spikes (|z| >= 2σ), and built automated CBT treatment planning with FHIR-compliant export."</i>
+                        </div>
+                    </div>
+
+                    <div id="viva-defense" class="viva-content">
+                        <h4>🎯 Defense Script: "What is Pending in the Remaining 25%?"</h4>
+                        <div class="defense-banner">
+                            <b>Question from Examiner:</b> <i>"Your 75% is done. What is pending in the remaining 25% and how will you complete it?"</i><br><br>
+                            <b>Team Answer:</b><br>
+                            <i>"Respected Examiners, our 75% milestone proves the mathematical validity, ensemble architecture, explainability, and interactive UI of our system. For the final 25%, our work is divided into 4 clear engineering milestones:
+                            <br>1. <b>Clinical Validation (10%):</b> Generating full ROC-AUC curves and sensitivity/specificity matrices across all 5 risk tiers on real EHR data.
+                            <br>2. <b>Acoustic Biomarkers (5%):</b> Integrating vocal prosody and speech latency extraction using librosa for complete tri-modal scoring.
+                            <br>3. <b>Production Deployment (5%):</b> Containerizing the backend into FastAPI microservices with Docker for hospital EHR integration.
+                            <br>4. <b>Regional Localization (5%):</b> Expanding the questionnaire and crisis lexicon into Hindi and Telugu for rural primary healthcare.
+                            <br>All 3 team members have their modules assigned and we are on track for 100% completion for final defense."</i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="js/nlp_engine.js"></script>
+    <script src="js/feature_engineering.js"></script>
+    <script src="js/ensemble_engine.js"></script>
+    <script src="js/shap_explainer.js"></script>
+    <script src="js/cbt_library.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
