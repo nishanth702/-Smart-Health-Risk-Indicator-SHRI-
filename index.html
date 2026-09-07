@@ -50,9 +50,6 @@
                 <button class="nav-item" data-tab="cbt">
                     <span class="icon">💊</span> CBT Action Plans
                 </button>
-                <button class="nav-item" data-tab="viva">
-                    <span class="icon">👥</span> 75% Review (3 Members)
-                </button>
             </nav>
 
             <div class="sidebar-footer">
@@ -403,70 +400,6 @@
                             <p>Generates HL7 FHIR DiagnosticReport JSON standard payload for Electronic Health Records.</p>
                         </div>
                         <button class="btn btn-primary" id="export-json-btn">📥 Download FHIR JSON</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- TAB 6: 75% REVIEW & 3-MEMBER VIVA -->
-            <section id="tab-viva" class="tab-pane">
-                <div class="panel">
-                    <div class="section-heading">
-                        <h3>👥 75% Major Project Review: 3-Member Team Division</h3>
-                        <span class="hint">College Viva & Evaluation Guide</span>
-                    </div>
-
-                    <div class="review-status-card">
-                        <h4>75% Milestone Completion Status</h4>
-                        <p><b>Completed (75%):</b> 6,000 Sample Clinical Dataset Generator, 20D Multimodal Feature Pipeline, 4-Model Stacked Ensemble (DepNet, AnxNet, SleepNet, FusionNet), Monte Carlo Dropout (95% CI), Real-Time NLP Lexicon & Crisis Bigrams, Permutation SHAP XAI Engine, Interactive Web Portal.<br>
-                        <b>Pending (25%):</b> Multi-Hospital Real-World ROC-AUC Validation (10%), Audio/Voice Prosody Extraction via librosa (5%), FastAPI Production Microservices & Docker (5%), Multi-Language Localization in Hindi/Telugu (5%).</p>
-                    </div>
-
-                    <div class="viva-tabs">
-                        <button class="viva-tab-btn active" data-viva="m1">👤 Member 1 (ML & Ensemble)</button>
-                        <button class="viva-tab-btn" data-viva="m2">👤 Member 2 (NLP & XAI)</button>
-                        <button class="viva-tab-btn" data-viva="m3">👤 Member 3 (Full-Stack & CBT)</button>
-                        <button class="viva-tab-btn" data-viva="defense">🎯 Pending 25% Defense Script</button>
-                    </div>
-
-                    <div id="viva-m1" class="viva-content active">
-                        <h4>Member 1: Machine Learning & Ensemble Architecture Lead</h4>
-                        <p><b>Modules Completed:</b> 6,000 Hybrid Clinical Dataset Generator, 20D Multimodal Feature Matrix, DepNet (10 feats), AnxNet (11 feats), SleepNet (11 feats), FusionNet Meta-Learner (23 inputs), Monte Carlo Dropout (20 passes, 95% CI).</p>
-                        <div class="speech-quote">
-                            <b>What Member 1 Must Say to Examiners:</b><br>
-                            <i>"Respected Examiners, I am responsible for the core Machine Learning Pipeline, 20-dimensional Feature Engineering, and the 4-Model Stacked Ensemble with Uncertainty Quantification. Rather than a single generic neural network, I designed 3 specialized sub-networks: DepNet for depressive symptoms, AnxNet for generalized anxiety, and SleepNet for insomnia and lifestyle biomarkers. These specialist outputs are fused by FusionNet—a 23-input meta-learner using Stacked Generalization. To ensure medical safety, I integrated Monte Carlo Dropout with 20 stochastic passes, providing clinicians with an exact 95% Confidence Interval."</i>
-                        </div>
-                    </div>
-
-                    <div id="viva-m2" class="viva-content">
-                        <h4>Member 2: Clinical NLP, Sentiment & Explainable AI (XAI) Lead</h4>
-                        <p><b>Modules Completed:</b> Real-time Clinical NLP Sentiment Engine, 90-Word Lexicon, 20 Crisis Bigrams, Intensifier Multipliers, Negation Handling, Emergency Crisis UI Escalation Modal, Permutation SHAP Feature Attribution.</p>
-                        <div class="speech-quote">
-                            <b>What Member 2 Must Say to Examiners:</b><br>
-                            <i>"Respected Examiners, my contribution encompasses the Real-Time Clinical NLP Sentiment Engine, Crisis Keyword Escalation, and Explainable AI (XAI) using SHAP Permutation Attribution. Adolescent self-reports contain critical unstructured emotional context. I built a clinical sentiment engine with negation and intensifier sensitivity that instantly flags acute crisis bigrams like 'want to die' or 'can't cope'. Furthermore, to eliminate the black-box nature of deep learning, I implemented a SHAP-style permutation attribution engine that explains to clinicians exactly which features drove the risk score up or down."</i>
-                        </div>
-                    </div>
-
-                    <div id="viva-m3" class="viva-content">
-                        <h4>Member 3: Full-Stack Web Platform, Forecasting & Interoperability Lead</h4>
-                        <p><b>Modules Completed:</b> Responsive Web Application (HTML/CSS/JS), Longitudinal Trajectory Forecasting (LR + EWMA, alpha=0.4), Statistical Anomaly Detector (2σ), Evidence-Based CBT Planner, HL7 FHIR DiagnosticReport Export.</p>
-                        <div class="speech-quote">
-                            <b>What Member 3 Must Say to Examiners:</b><br>
-                            <i>"Respected Examiners, I developed the interactive Web Application, the Longitudinal Trajectory & Anomaly Detection system, and the Evidence-Based CBT Intervention Engine. I designed the responsive clinician portal allowing real-time assessment inputs and interactive visualizations. To track patient recovery over time, I implemented 30-day trajectory forecasting combining Linear Regression with Exponentially Weighted Moving Average (EWMA) to detect statistical spikes (|z| >= 2σ), and built automated CBT treatment planning with FHIR-compliant export."</i>
-                        </div>
-                    </div>
-
-                    <div id="viva-defense" class="viva-content">
-                        <h4>🎯 Defense Script: "What is Pending in the Remaining 25%?"</h4>
-                        <div class="defense-banner">
-                            <b>Question from Examiner:</b> <i>"Your 75% is done. What is pending in the remaining 25% and how will you complete it?"</i><br><br>
-                            <b>Team Answer:</b><br>
-                            <i>"Respected Examiners, our 75% milestone proves the mathematical validity, ensemble architecture, explainability, and interactive UI of our system. For the final 25%, our work is divided into 4 clear engineering milestones:
-                            <br>1. <b>Clinical Validation (10%):</b> Generating full ROC-AUC curves and sensitivity/specificity matrices across all 5 risk tiers on real EHR data.
-                            <br>2. <b>Acoustic Biomarkers (5%):</b> Integrating vocal prosody and speech latency extraction using librosa for complete tri-modal scoring.
-                            <br>3. <b>Production Deployment (5%):</b> Containerizing the backend into FastAPI microservices with Docker for hospital EHR integration.
-                            <br>4. <b>Regional Localization (5%):</b> Expanding the questionnaire and crisis lexicon into Hindi and Telugu for rural primary healthcare.
-                            <br>All 3 team members have their modules assigned and we are on track for 100% completion for final defense."</i>
-                        </div>
                     </div>
                 </div>
             </section>

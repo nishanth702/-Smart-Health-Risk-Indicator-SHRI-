@@ -136,8 +136,7 @@ with st.sidebar:
             "🧠 4-Model Ensemble & MC Dropout",
             "🔍 Explainable AI (SHAP Analysis)",
             "📈 Trajectory & Anomaly Tracking",
-            "💊 CBT Intervention Engine",
-            "👥 75% Review: 3-Member Viva Guide"
+            "💊 CBT Intervention Engine"
         ],
         index=0
     )
@@ -544,89 +543,3 @@ elif selected_nav == "💊 CBT Intervention Engine":
         file_name=f"SHRI_Assessment_{preset_choice.split()[0]}.json",
         mime="application/json"
     )
-
-
-# ==============================================================================
-# VIEW 6: 75% REVIEW - 3-MEMBER VIVA & CONTRIBUTION GUIDE
-# ==============================================================================
-elif selected_nav == "👥 75% Review: 3-Member Viva Guide":
-    st.header("👥 75% Project Review — 3-Member Team Contribution & Viva Guide")
-    st.write("Specifically formatted for college major project / capstone reviews with explicit 3-member role division, defense points, and viva answers.")
-
-    st.markdown("""
-    <div class="metric-card" style="margin-bottom:24px;">
-        <h3 style="color:#38BDF8; margin-top:0;">📊 75% Milestone Completion Status</h3>
-        <p style="font-size:14px; color:#CBD5E1;">
-            <b>Completed (75%):</b> Multi-Modal Clinical Dataset Generator (6,000 samples), 20D Feature Pipeline, 4-Model Stacked Ensemble (DepNet, AnxNet, SleepNet, FusionNet), Monte Carlo Dropout (95% CI), Real-time NLP Crisis Lexicon, SHAP XAI Engine, Interactive Web Portal.<br>
-            <b>Pending (25%):</b> Multi-hospital EHR pilot testing, audio/voice biomarker integration, cloud microservice containerization, multi-language localization.
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "👤 Member 1 (ML & Ensemble Lead)",
-        "👤 Member 2 (NLP & Explainable AI Lead)",
-        "👤 Member 3 (Full-Stack & Clinical Pipeline Lead)",
-        "🎯 Pending 25% Defense Script"
-    ])
-
-    with tab1:
-        st.subheader("Member 1: Machine Learning & Ensemble Architecture Lead")
-        st.markdown(r"""
-        **Assigned Role & Completed Modules:**
-        1. **Clinical Dataset Generator (`clinical_dataset.py`)**:
-           - Generated 6,000 synthetic hybrid samples with epidemiological distributions (PHQ-9, GAD-7, ISI, SCARED) and SMOTE oversampling.
-        2. **4-Model Stacked Ensemble (`models.py`)**:
-           - Built *DepNet* (10 features), *AnxNet* (11 features), and *SleepNet* (11 features).
-           - Developed *FusionNet* (23-input meta-learner) using stacked generalization.
-        3. **Monte Carlo Dropout Uncertainty Engine**:
-           - Implemented 20 stochastic passes at test time for 95% Confidence Interval ($\pm 1.96\sigma$).
-        
-        **What Member 1 must say to the Examiner:**
-        > *"My core contribution is the 4-Model Stacked Ensemble architecture and Uncertainty Quantification. Rather than a single monolithic neural net, I designed 3 specialized sub-networks for depression, anxiety, and sleep disorders, fused by a 23-input Meta-Learner (FusionNet). To ensure medical reliability, I integrated Monte Carlo Dropout with 20 stochastic passes to provide clinicians with an exact 95% confidence interval instead of just a raw point estimate."*
-        """)
-
-    with tab2:
-        st.subheader("Member 2: NLP, Sentiment & Explainable AI (XAI) Lead")
-        st.markdown(r"""
-        **Assigned Role & Completed Modules:**
-        1. **Real-Time Clinical NLP Engine (`nlp_engine.py`)**:
-           - Implemented 90+ positive/negative clinical dictionaries, 20 high-risk bigrams, intensifier multipliers, and negation handlers.
-        2. **Immediate Crisis Escalation Modal**:
-           - Built real-time keyword flagging (`"want to die"`, `"self harm"`, `"can't cope"`) with automated crisis hotline alerts.
-        3. **Permutation SHAP Feature Attribution (`xai_explainer.py`)**:
-           - Developed the explainability engine decomposing the composite score into exact risk factors ($+$ pts) vs protective factors ($-$ pts) relative to baseline.
-        
-        **What Member 2 must say to the Examiner:**
-        > *"I led the Clinical NLP and Explainable AI (XAI) modules. In mental healthcare, patient text contains crucial unstructured signals. I engineered a clinical sentiment engine with negation and intensifier sensitivity that instantly flags acute crisis bigrams. Furthermore, to eliminate the black-box nature of deep learning, I implemented a SHAP-style permutation attribution engine that explains to clinicians exactly which features drove the risk score up or down."*
-        """)
-
-    with tab3:
-        st.subheader("Member 3: Full-Stack Web Platform, Forecasting & Interoperability Lead")
-        st.markdown(r"""
-        **Assigned Role & Completed Modules:**
-        1. **Interactive Web Application (`app.py`)**:
-           - Designed and developed the multi-view Streamlit/Python clinical dashboard with interactive Plotly visual analytics.
-        2. **Longitudinal Trajectory & Anomaly Engine (`models.py`)**:
-           - Built hybrid Linear Regression + EWMA 30-day forecasting and $2\sigma$ statistical anomaly detection.
-        3. **CBT Recommendation & FHIR Export Engine (`cbt_library.py`)**:
-           - Integrated evidence-graded CBT protocols and JSON/FHIR clinical data interchange.
-        
-        **What Member 3 must say to the Examiner:**
-        > *"I developed the full-stack interactive web application, longitudinal analytics, and clinical intervention engine. I designed the clinician portal allowing real-time assessment inputs and interactive visualizations. I implemented the 30-day trajectory forecasting combining Linear Regression with Exponentially Weighted Moving Average (EWMA) to detect statistical spikes ($|z| \ge 2\sigma$), and built automated CBT treatment planning with FHIR-compliant export."*
-        """)
-
-    with tab4:
-        st.subheader("🎯 Defense Script: 'What is Pending in the Remaining 25%?'")
-        st.markdown("""
-        When the examiner asks: **"Your 75% is done. What is pending in the remaining 25% and how will you complete it?"**, answer with these **4 concrete points**:
-
-        1. **Multi-Hospital Pilot Validation & Clinical EHR Integration (10%)**:
-           - *"We have validated on our 6,000 clinically grounded synthetic benchmarks. In the final 25%, we are running prospective testing with anonymized real-world EHR records under institutional review."*
-        2. **Acoustic & Voice Biomarker Ingestion (5%)**:
-           - *"We are adding speech prosody (pitch jitter, speech rate) feature extraction from patient audio check-ins to make the health risk indicator fully multimodal."*
-        3. **Containerization & Cloud Microservices Deployment (5%)**:
-           - *"We will package the Python FastAPI/Streamlit services into Docker containers with Kubernetes orchestration for scalable clinic deployment."*
-        4. **Multi-Language Regional Localization (5%)**:
-           - *"We are translating the 90-word clinical lexicon and assessment questionnaire into regional languages (Hindi, Telugu, etc.) for rural healthcare access."*
-        """)

@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initTabs();
     initSliders();
     initPresetSelector();
-    initVivaTabs();
     initExportBtn();
     
     // Initial run
@@ -59,8 +58,7 @@ function initTabs() {
         ensemble: { title: "🧠 4-Model Ensemble & Uncertainty Quantification", desc: "Demonstrates specialist networks, meta-learner (FusionNet), and Monte Carlo Dropout passes." },
         shap: { title: "🔍 Explainable AI (XAI) — Permutation SHAP Attribution", desc: "Decomposes risk score into positive risk drivers and mitigating protective habits relative to baseline." },
         trajectory: { title: "📈 Longitudinal Trajectory & Anomaly Tracking", desc: "Tracks patient history across sessions, generates 30-day forecast, and flags 2σ anomalies." },
-        cbt: { title: "💊 Evidence-Based CBT Intervention Protocols", desc: "Generates domain-targeted Cognitive Behavioral Therapy protocols with measurable milestones." },
-        viva: { title: "👥 75% Major Project Review — 3-Member Team Viva Guide", desc: "Detailed breakdown of Member 1, Member 2, and Member 3 contributions and examiner defense scripts." }
+        cbt: { title: "💊 Evidence-Based CBT Intervention Protocols", desc: "Generates domain-targeted Cognitive Behavioral Therapy protocols with measurable milestones." }
     };
 
     navBtns.forEach(btn => {
@@ -79,22 +77,6 @@ function initTabs() {
 
             // Re-render charts when visible
             setTimeout(updateAllViews, 50);
-        });
-    });
-}
-
-function initVivaTabs() {
-    const vBtns = document.querySelectorAll(".viva-tab-btn");
-    const vContents = document.querySelectorAll(".viva-content");
-
-    vBtns.forEach(btn => {
-        btn.addEventListener("click", () => {
-            const target = btn.dataset.viva;
-            vBtns.forEach(b => b.classList.remove("active"));
-            vContents.forEach(c => c.classList.remove("active"));
-
-            btn.classList.add("active");
-            document.getElementById(`viva-${target}`).classList.add("active");
         });
     });
 }
