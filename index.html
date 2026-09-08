@@ -227,7 +227,7 @@
                 </button>
             </div>
 
-            <!-- Patient Detailed Tabs (When inside Patient Dossier) -->
+            <!-- Patient Detailed Tabs (When inside Patient Dossier - Doctor View) -->
             <div id="clinical-tabs-section" class="nav-section" style="display: none;">
                 <div class="nav-section-title">ACTIVE PATIENT DOSSIER</div>
                 <button class="nav-sub-item active" data-tab="assessment" onclick="switchDossierTab('assessment')">
@@ -247,16 +247,16 @@
                 </button>
             </div>
 
-            <!-- Patient-Only Navigation -->
+            <!-- Patient-Only Navigation (When Patient is logged in) -->
             <div id="patient-nav-section" class="nav-section" style="display: none;">
                 <div class="nav-section-title">MY WELLNESS PORTAL</div>
-                <button class="nav-item active" onclick="showPatientPortalTab('self-check')">
+                <button class="nav-item active" id="pat-nav-self-check" onclick="showPatientPortalTab('self-check')">
                     <span class="icon">🧘</span> Daily Self-Check
                 </button>
-                <button class="nav-item" onclick="showPatientPortalTab('my-trends')">
+                <button class="nav-item" id="pat-nav-trends" onclick="showPatientPortalTab('my-trends')">
                     <span class="icon">📊</span> My Recovery Trends
                 </button>
-                <button class="nav-item" onclick="showPatientPortalTab('my-cbt')">
+                <button class="nav-item" id="pat-nav-cbt" onclick="showPatientPortalTab('my-cbt')">
                     <span class="icon">🛡️</span> Coping Strategies
                 </button>
                 <button class="nav-item" onclick="showEmergencyModal()">
@@ -363,7 +363,7 @@
 
 
             <!-- =================================================================
-                 VIEW 2: INDIVIDUAL PATIENT CLINICAL DOSSIER & ASSESSMENT
+                 VIEW 2: INDIVIDUAL PATIENT CLINICAL DOSSIER (Doctor View)
                  ================================================================= -->
             <div id="doctor-patient-detail-view" class="view-panel" style="display: none;">
                 
@@ -621,70 +621,205 @@
                  ================================================================= -->
             <div id="patient-portal-view" class="view-panel" style="display: none;">
                 
+                <!-- Patient Welcome Banner -->
                 <div class="patient-welcome-banner">
                     <div class="welcome-text">
                         <h2 id="patient-portal-welcome-name">Hello, Aarav! 👋</h2>
-                        <p>Welcome to your personal wellness check-in. All information stays private on your device.</p>
+                        <p>Welcome to your personal wellness portal. All check-ins and reflections stay 100% private on your device.</p>
                     </div>
                     <div class="wellness-streak-badge">
-                        <span>🔥 5-Day Check-in Streak!</span>
+                        <span id="patient-streak-text">🔥 5-Day Check-in Streak!</span>
                     </div>
                 </div>
 
-                <div class="grid-2-col">
-                    <!-- Self Check Form -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>🧘 Daily Self-Check</h3>
-                            <span class="badge badge-info">Confidential</span>
+                <!-- Patient Tab Sub-Navigation -->
+                <div class="dossier-subtabs" style="margin-bottom: 24px;">
+                    <button class="subtab-btn active" id="pat-tab-btn-self-check" onclick="showPatientPortalTab('self-check')">
+                        🧘 Daily Self-Check
+                    </button>
+                    <button class="subtab-btn" id="pat-tab-btn-trends" onclick="showPatientPortalTab('my-trends')">
+                        📊 My Recovery Trends & Strength
+                    </button>
+                    <button class="subtab-btn" id="pat-tab-btn-cbt" onclick="showPatientPortalTab('my-cbt')">
+                        🛡️ Coping Strategies & Exercises
+                    </button>
+                </div>
+
+                <!-- PATIENT SUB-TAB 1: DAILY SELF-CHECK -->
+                <div id="pat-view-self-check" class="patient-sub-panel active">
+                    <div class="grid-2-col">
+                        <!-- Self Check Form -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🧘 Daily Mental Wellness Check</h3>
+                                <span class="badge badge-info">Confidential</span>
+                            </div>
+                            <form id="patient-self-form" onsubmit="event.preventDefault(); submitPatientSelfCheck();">
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>How is your energy & mood today?</span>
+                                        <b id="pat-val-mood">Good</b>
+                                    </div>
+                                    <input type="range" id="pat-slider-mood" min="0" max="3" value="1" class="slider" oninput="updatePatSlider(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>How well did you sleep last night?</span>
+                                        <b id="pat-val-sleep">7 Hours</b>
+                                    </div>
+                                    <input type="range" id="pat-slider-sleep" min="3" max="12" value="7" class="slider" oninput="updatePatSleep(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>Are you feeling anxious or stressed about school/exams?</span>
+                                        <b id="pat-val-stress">Mild</b>
+                                    </div>
+                                    <input type="range" id="pat-slider-stress" min="0" max="3" value="1" class="slider" oninput="updatePatStress(this)">
+                                </div>
+                                <div class="form-group">
+                                    <label for="pat-journal-text">Write your thoughts or reflections for today:</label>
+                                    <textarea id="pat-journal-text" rows="4" class="textarea-field" placeholder="How are you feeling? Anything exciting or challenging happened today?"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <span>💾 Save Today's Check-in & Update Trends</span>
+                                </button>
+                            </form>
                         </div>
-                        <form id="patient-self-form" onsubmit="event.preventDefault(); submitPatientSelfCheck();">
-                            <div class="slider-group">
-                                <div class="slider-label">
-                                    <span>How is your energy & mood today?</span>
-                                    <b id="pat-val-mood">Good</b>
-                                </div>
-                                <input type="range" id="pat-slider-mood" min="0" max="3" value="1" class="slider" oninput="updatePatSlider(this)">
+
+                        <!-- Personal Wellness Meter & Tips -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🌱 Today's Wellness Insights</h3>
+                                <span class="badge badge-success" id="pat-badge-status">Safe & Balanced</span>
                             </div>
-                            <div class="slider-group">
-                                <div class="slider-label">
-                                    <span>How well did you sleep last night?</span>
-                                    <b id="pat-val-sleep">7 Hours</b>
-                                </div>
-                                <input type="range" id="pat-slider-sleep" min="3" max="12" value="7" class="slider" oninput="updatePatSleep(this)">
+                            <div class="patient-wellness-box">
+                                <div class="wellness-icon" id="pat-wellness-icon">🌟</div>
+                                <h3 id="patient-wellness-status">You're doing great!</h3>
+                                <p id="patient-wellness-msg">Your sleep duration is healthy and your stress level is within balanced limits.</p>
                             </div>
-                            <div class="slider-group">
-                                <div class="slider-label">
-                                    <span>Are you feeling anxious or stressed about school?</span>
-                                    <b id="pat-val-stress">Mild</b>
-                                </div>
-                                <input type="range" id="pat-slider-stress" min="0" max="3" value="1" class="slider" oninput="updatePatStress(this)">
+                            <div class="section-title">Quick Daily Coping Exercise</div>
+                            <div class="patient-coping-card">
+                                <h4>🌬️ 4-7-8 Deep Breathing Exercise</h4>
+                                <p>Inhale through nose for 4 seconds, hold breath for 7 seconds, exhale slowly through mouth for 8 seconds. Repeat 4 times.</p>
                             </div>
-                            <div class="form-group">
-                                <label for="pat-journal-text">Write your thoughts or reflections for today:</label>
-                                <textarea id="pat-journal-text" rows="3" class="textarea-field" placeholder="How are you feeling? Anything on your mind?"></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">
-                                <span>Save Daily Check-in</span>
+                            <button type="button" class="btn btn-secondary btn-block" style="margin-top: 14px;" onclick="showPatientPortalTab('my-cbt')">
+                                <span>Explore All Coping Strategies →</span>
                             </button>
-                        </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PATIENT SUB-TAB 2: RECOVERY TRENDS & STRENGTH -->
+                <div id="pat-view-trends" class="patient-sub-panel" style="display: none;">
+                    <div class="metric-grid" style="margin-bottom: 20px;">
+                        <div class="metric-card">
+                            <div class="metric-icon green">💪</div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="pat-metric-wellness">82 / 100</span>
+                                <span class="metric-lbl">Current Wellness Strength</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon blue">🌙</div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="pat-metric-sleep">7.2 Hrs</span>
+                                <span class="metric-lbl">Avg Sleep Quality</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon orange">🎯</div>
+                            <div class="metric-data">
+                                <span class="metric-val" id="pat-metric-streak">5 Days</span>
+                                <span class="metric-lbl">Consecutive Check-ins</span>
+                            </div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon green">🛡️</div>
+                            <div class="metric-data">
+                                <span class="metric-val">Low Stress</span>
+                                <span class="metric-lbl">Clinical Stability</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Personal Wellness Meter & Tips -->
                     <div class="card">
                         <div class="card-header">
-                            <h3>🌱 Your Wellness Insights</h3>
-                            <span class="badge badge-success">Safe & Balanced</span>
+                            <h3>📈 My Personal Recovery & Mood Trajectory</h3>
+                            <span class="badge badge-info">Longitudinal Wellness</span>
                         </div>
-                        <div class="patient-wellness-box">
-                            <div class="wellness-icon">🌟</div>
-                            <h3 id="patient-wellness-status">You're doing great!</h3>
-                            <p id="patient-wellness-msg">Your sleep duration is healthy and your stress level is within balanced limits.</p>
+                        <p class="card-description">
+                            This chart tracks your emotional stability and recovery score across check-in sessions. Higher scores reflect greater wellness resilience!
+                        </p>
+                        <div class="chart-box-large">
+                            <canvas id="patientRecoveryChart"></canvas>
                         </div>
-                        <div class="section-title">Recommended Daily Coping Exercise</div>
-                        <div class="patient-coping-card">
-                            <h4>🌬️ 4-7-8 Deep Breathing Exercise</h4>
-                            <p>Inhale through nose for 4 seconds, hold breath for 7 seconds, exhale slowly through mouth for 8 seconds. Repeat 4 times.</p>
+                    </div>
+                </div>
+
+                <!-- PATIENT SUB-TAB 3: COPING STRATEGIES & INTERACTIVE EXERCISES -->
+                <div id="pat-view-cbt" class="patient-sub-panel" style="display: none;">
+                    <div class="grid-2-col">
+                        
+                        <!-- Tool 1: Interactive Animated Breathing Circle -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🌬️ 4-7-8 Breathing Calmer</h3>
+                                <span class="badge badge-success">Interactive</span>
+                            </div>
+                            <p class="card-description">Follow the expanding and contracting circle to slow down your heart rate and release tension.</p>
+                            
+                            <div class="breathing-widget-container">
+                                <div class="breathing-circle-outer" id="breathing-circle">
+                                    <span class="breathing-phase-text" id="breathing-phase">Inhale (4s)</span>
+                                </div>
+                            </div>
+                            <div class="breathing-controls" style="text-align: center; margin-top: 16px;">
+                                <button type="button" class="btn btn-primary" id="breathing-toggle-btn" onclick="toggleBreathingExercise()">
+                                    <span>▶️ Start 2-Minute Breathing</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tool 2: Negative Thought Buster (Cognitive Reframing) -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>💭 Negative Thought Buster</h3>
+                                <span class="badge badge-info">CBT Reframing</span>
+                            </div>
+                            <p class="card-description">Turn overwhelming negative thoughts into balanced, constructive viewpoints.</p>
+                            
+                            <div class="form-group">
+                                <label for="cbt-unhelpful-thought">What negative thought is bothering you?</label>
+                                <input type="text" id="cbt-unhelpful-thought" placeholder="e.g. I am going to fail and let everyone down..." class="input-field">
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-block" onclick="generateThoughtReframe()">
+                                <span>✨ Reframe This Thought</span>
+                            </button>
+                            <div id="cbt-reframed-result" class="reframed-box" style="display: none; margin-top: 14px;">
+                                <h4>🌟 Balanced Constructive Thought:</h4>
+                                <p id="cbt-reframed-text">"Feeling nervous is natural, but I have prepared well and can handle one step at a time."</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Additional Coping Toolkit Grid -->
+                    <div class="cbt-cards-grid" style="margin-top: 20px;">
+                        <div class="cbt-card">
+                            <h4>🖐️ 5-4-3-2-1 Sensory Grounding</h4>
+                            <p>Name <b>5</b> things you see, <b>4</b> things you can touch, <b>3</b> sounds you hear, <b>2</b> things you smell, and <b>1</b> positive truth about yourself.</p>
+                        </div>
+                        <div class="cbt-card">
+                            <h4>🌙 Healthy Sleep Routine</h4>
+                            <p>Put phone and screens away 1 hour before sleeping. Keep room temperature cool and maintain the same bedtime every night.</p>
+                        </div>
+                        <div class="cbt-card">
+                            <h4>🏃 15-Minute Movement Energy Boost</h4>
+                            <p>Take a brisk walk outside or do gentle stretching. Physical movement releases natural endorphins that elevate dopamine.</p>
+                        </div>
+                        <div class="cbt-card">
+                            <h4>💬 Connect with a Trusted Friend</h4>
+                            <p>Sharing your feelings with a parent, friend, or counselor helps unburden emotional cognitive weight.</p>
                         </div>
                     </div>
                 </div>
@@ -696,7 +831,7 @@
 
 
     <!-- =========================================================================
-         MODAL 1: ENROLL / ADD NEW PATIENT MODAL
+         MODAL 1: ENROLL / ADD NEW PATIENT MODAL (Doctor View)
          ========================================================================= -->
     <div id="add-patient-modal" class="modal-overlay" style="display: none;">
         <div class="modal-dialog">

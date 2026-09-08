@@ -1,5 +1,5 @@
 /**
- * Smart Health Risk Indicator (SHRI) - Core Application Controller v3.0
+ * Smart Health Risk Indicator (SHRI) - Core Application Controller v3.2
  * Authentication, Multi-Patient Registry Management, and Client-Side Deep Learning
  */
 
@@ -18,6 +18,8 @@ const DEFAULT_PATIENTS = [
         ci95: [49.2, 58.8],
         lastAssessment: "2026-09-08",
         history: [38, 42, 48, 51, 54],
+        recoveryHistory: [62, 65, 71, 78, 82],
+        streak: 5,
         q: { q1: 1, q2: 2, q3: 2, q4: 3, q5: 2 },
         bio: { sleepHours: 6.0, screenTime: 7.0, exerciseMinutes: 20, socialInteractions: 3 },
         journal: "I felt very nervous before class presentation today and my heart was pounding. Had trouble sleeping last night."
@@ -33,6 +35,8 @@ const DEFAULT_PATIENTS = [
         ci95: [72.4, 83.6],
         lastAssessment: "2026-09-08",
         history: [48, 55, 64, 71, 78],
+        recoveryHistory: [45, 48, 52, 55, 59],
+        streak: 3,
         q: { q1: 3, q2: 3, q3: 3, q4: 2, q5: 2 },
         bio: { sleepHours: 4.0, screenTime: 9.5, exerciseMinutes: 5, socialInteractions: 1 },
         journal: "I feel completely exhausted and tired of everything. I cannot find joy in anything and stay in bed all day."
@@ -48,6 +52,8 @@ const DEFAULT_PATIENTS = [
         ci95: [14.5, 21.5],
         lastAssessment: "2026-09-07",
         history: [16, 18, 17, 19, 18],
+        recoveryHistory: [80, 84, 82, 88, 91],
+        streak: 7,
         q: { q1: 0, q2: 0, q3: 1, q4: 0, q5: 0 },
         bio: { sleepHours: 8.5, screenTime: 2.5, exerciseMinutes: 50, socialInteractions: 6 },
         journal: "Had a great art workshop today and finished my science project on time. Feeling energetic and cheerful!"
@@ -63,6 +69,8 @@ const DEFAULT_PATIENTS = [
         ci95: [60.8, 71.2],
         lastAssessment: "2026-09-06",
         history: [44, 49, 56, 61, 66],
+        recoveryHistory: [50, 52, 58, 63, 67],
+        streak: 4,
         q: { q1: 2, q2: 2, q3: 3, q4: 2, q5: 2 },
         bio: { sleepHours: 3.5, screenTime: 11.0, exerciseMinutes: 10, socialInteractions: 2 },
         journal: "Gaming until 4 AM every night. Cannot focus during lectures and constantly falling asleep during afternoon periods."
@@ -82,6 +90,11 @@ let ensembleBarInstance = null;
 let mcHistInstance = null;
 let shapBarInstance = null;
 let trajectoryChartInstance = null;
+let patientRecoveryChartInstance = null;
+
+// Breathing Tool State
+let breathingInterval = null;
+let isBreathingActive = false;
 
 // =========================================================================
 // 2. INITIALIZATION
@@ -128,56 +141,59 @@ function checkExistingSession() {
 // =========================================================================
 function switchAuthRole(role) {
     currentAuthRole = role;
-    document.getElementById("role-doctor-btn").classList.toggle("active", role === "doctor");
-    document.getElementById("role-patient-btn").classList.toggle("active", role === "patient");
+    const docBtn = document.getElementById("role-doctor-btn");
+    const patBtn = document.getElementById("role-patient-btn");
+    if (docBtn) docBtn.classList.toggle("active", role === "doctor");
+    if (patBtn) patBtn.classList.toggle("active", role === "patient");
     updateAuthFormsVisibility();
 }
 
 function switchAuthMode(mode) {
     currentAuthMode = mode;
-    document.getElementById("mode-login-btn").classList.toggle("active", mode === "login");
-    document.getElementById("mode-register-btn").classList.toggle("active", mode === "register");
+    const logBtn = document.getElementById("mode-login-btn");
+    const regBtn = document.getElementById("mode-register-btn");
+    if (logBtn) logBtn.classList.toggle("active", mode === "login");
+    if (regBtn) regBtn.classList.toggle("active", mode === "register");
     updateAuthFormsVisibility();
 }
 
 function updateAuthFormsVisibility() {
-    document.getElementById("doctor-login-form").classList.remove("active");
-    document.getElementById("doctor-reg-form").classList.remove("active");
-    document.getElementById("patient-login-form").classList.remove("active");
-    document.getElementById("patient-reg-form").classList.remove("active");
+    const docLogin = document.getElementById("doctor-login-form");
+    const docReg = document.getElementById("doctor-reg-form");
+    const patLogin = document.getElementById("patient-login-form");
+    const patReg = document.getElementById("patient-reg-form");
+
+    if (docLogin) docLogin.classList.remove("active");
+    if (docReg) docReg.classList.remove("active");
+    if (patLogin) patLogin.classList.remove("active");
+    if (patReg) patReg.classList.remove("active");
 
     if (currentAuthRole === "doctor") {
-        if (currentAuthMode === "login") {
-            document.getElementById("doctor-login-form").classList.add("active");
-        } else {
-            document.getElementById("doctor-reg-form").classList.add("active");
-        }
+        if (currentAuthMode === "login" && docLogin) docLogin.classList.add("active");
+        if (currentAuthMode === "register" && docReg) docReg.classList.add("active");
     } else {
-        if (currentAuthMode === "login") {
-            document.getElementById("patient-login-form").classList.add("active");
-        } else {
-            document.getElementById("patient-reg-form").classList.add("active");
-        }
+        if (currentAuthMode === "login" && patLogin) patLogin.classList.add("active");
+        if (currentAuthMode === "register" && patReg) patReg.classList.add("active");
     }
 }
 
 function quickDemoLogin(role) {
-    if (role === "doctor") {
+    if (role === 'doctor') {
         currentUser = {
             role: "doctor",
             name: "Dr. Ramesh S",
-            title: "Lead Clinician & Assistant Professor",
-            dept: "Department of Adolescent Psychiatry & NWC",
+            title: "Lead Clinician & Neuropsychiatrist",
+            license: "MED-SRM-2024-8841",
             email: "dr.ramesh@srmist.edu.in"
         };
     } else {
+        const aarav = patientsDB.find(p => p.id === "PT-1001") || patientsDB[0];
         currentUser = {
             role: "patient",
-            name: "Aarav Singh",
-            id: "PT-1001",
-            age: 15,
-            gender: "Male",
-            email: "aarav.singh@student.edu"
+            name: aarav.name,
+            id: aarav.id,
+            age: aarav.age,
+            gender: aarav.gender
         };
     }
     localStorage.setItem("shri_active_user", JSON.stringify(currentUser));
@@ -188,12 +204,12 @@ function handleDoctorLogin(event) {
     event.preventDefault();
     const email = document.getElementById("doc-email").value;
     const clinic = document.getElementById("doc-clinic").value;
-    
+
     currentUser = {
         role: "doctor",
         name: "Dr. Ramesh S",
-        title: "Clinical Decision Specialist",
-        dept: clinic,
+        title: clinic,
+        license: "NWC-MED-4492",
         email: email
     };
     localStorage.setItem("shri_active_user", JSON.stringify(currentUser));
@@ -235,8 +251,8 @@ function handlePatientLogin(event) {
     } else {
         currentUser = {
             role: "patient",
-            name: "Adolescent User",
-            id: patId,
+            name: "Aarav Singh",
+            id: patId || "PT-1001",
             age: 15,
             gender: "Male"
         };
@@ -263,6 +279,8 @@ function handlePatientRegister(event) {
         ci95: [18.2, 25.8],
         lastAssessment: new Date().toISOString().split("T")[0],
         history: [20, 22],
+        recoveryHistory: [75, 78, 82],
+        streak: 1,
         q: { q1: 1, q2: 0, q3: 1, q4: 0, q5: 0 },
         bio: { sleepHours: 7.5, screenTime: 4.0, exerciseMinutes: 30, socialInteractions: 4 },
         journal: "Registered new profile for daily wellness tracking."
@@ -285,36 +303,51 @@ function handlePatientRegister(event) {
 function handleLogout() {
     localStorage.removeItem("shri_active_user");
     currentUser = null;
+    if (breathingInterval) {
+        clearInterval(breathingInterval);
+        breathingInterval = null;
+        isBreathingActive = false;
+    }
     showAuthSection();
 }
 
 function showAuthSection() {
-    document.getElementById("auth-section").style.display = "flex";
-    document.getElementById("main-app-section").style.display = "none";
+    const authSec = document.getElementById("auth-section");
+    const mainSec = document.getElementById("main-app-section");
+    if (authSec) authSec.style.display = "flex";
+    if (mainSec) mainSec.style.display = "none";
 }
 
 // =========================================================================
 // 4. APPLICATION ROUTING & PORTAL VIEWS
 // =========================================================================
 function launchApplication() {
-    document.getElementById("auth-section").style.display = "none";
-    document.getElementById("main-app-section").style.display = "flex";
+    const authSec = document.getElementById("auth-section");
+    const mainSec = document.getElementById("main-app-section");
+    if (authSec) authSec.style.display = "none";
+    if (mainSec) mainSec.style.display = "flex";
 
     // Update Sidebar Profile
-    document.getElementById("sidebar-user-name").innerText = currentUser.name;
-    document.getElementById("sidebar-user-role").innerText = currentUser.role === "doctor" ? (currentUser.title || "Clinical Specialist") : "Patient";
-    document.getElementById("sidebar-user-avatar").innerText = currentUser.role === "doctor" ? "👨‍⚕️" : "👤";
+    const userNameEl = document.getElementById("sidebar-user-name");
+    const userRoleEl = document.getElementById("sidebar-user-role");
+    const userAvatarEl = document.getElementById("sidebar-user-avatar");
+
+    if (userNameEl) userNameEl.innerText = currentUser.name;
+    if (userRoleEl) userRoleEl.innerText = currentUser.role === "doctor" ? (currentUser.title || "Lead Clinician") : "Adolescent Patient";
+    if (userAvatarEl) userAvatarEl.innerText = currentUser.role === "doctor" ? "👨‍⚕️" : "👤";
 
     if (currentUser.role === "doctor") {
         document.getElementById("doctor-nav-section").style.display = "block";
         document.getElementById("patient-nav-section").style.display = "none";
-        document.getElementById("top-add-patient-btn").style.display = "inline-flex";
+        const topAddBtn = document.getElementById("top-add-patient-btn");
+        if (topAddBtn) topAddBtn.style.display = "inline-flex";
         showDoctorRegistry();
     } else {
         document.getElementById("doctor-nav-section").style.display = "none";
         document.getElementById("clinical-tabs-section").style.display = "none";
         document.getElementById("patient-nav-section").style.display = "block";
-        document.getElementById("top-add-patient-btn").style.display = "none";
+        const topAddBtn = document.getElementById("top-add-patient-btn");
+        if (topAddBtn) topAddBtn.style.display = "none";
         showPatientPortalView();
     }
 }
@@ -325,8 +358,11 @@ function showDoctorRegistry() {
     document.getElementById("patient-portal-view").style.display = "none";
     
     document.getElementById("clinical-tabs-section").style.display = "none";
-    document.getElementById("nav-registry-btn").classList.add("active");
-    document.getElementById("nav-dossier-btn").classList.remove("active");
+    
+    const regBtn = document.getElementById("nav-registry-btn");
+    const dosBtn = document.getElementById("nav-dossier-btn");
+    if (regBtn) regBtn.classList.add("active");
+    if (dosBtn) dosBtn.classList.remove("active");
 
     document.getElementById("page-main-title").innerText = "Patient Registry Dashboard";
     document.getElementById("page-subtitle").innerText = "Enrolled Adolescent Patients & Continuous Risk Monitoring";
@@ -343,8 +379,10 @@ function showPatientDossier(patientId) {
     document.getElementById("patient-portal-view").style.display = "none";
 
     document.getElementById("clinical-tabs-section").style.display = "block";
-    document.getElementById("nav-registry-btn").classList.remove("active");
-    document.getElementById("nav-dossier-btn").classList.add("active");
+    const regBtn = document.getElementById("nav-registry-btn");
+    const dosBtn = document.getElementById("nav-dossier-btn");
+    if (regBtn) regBtn.classList.remove("active");
+    if (dosBtn) dosBtn.classList.add("active");
 
     populatePatientDossier(activePatientId);
 }
@@ -354,10 +392,88 @@ function showPatientPortalView() {
     document.getElementById("doctor-patient-detail-view").style.display = "none";
     document.getElementById("patient-portal-view").style.display = "block";
 
-    document.getElementById("page-main-title").innerText = "My Adolescent Wellness Portal";
-    document.getElementById("page-subtitle").innerText = "Confidential Daily Check-in & Science-Backed Coping Strategies";
+    const pat = patientsDB.find(p => p.id === (currentUser.id || "PT-1001")) || patientsDB[0];
+    const welcomeEl = document.getElementById("patient-portal-welcome-name");
+    if (welcomeEl) welcomeEl.innerText = `Hello, ${currentUser.name}! 👋`;
 
-    document.getElementById("patient-portal-welcome-name").innerText = `Hello, ${currentUser.name}! 👋`;
+    const streakEl = document.getElementById("patient-streak-text");
+    if (streakEl) streakEl.innerText = `🔥 ${pat.streak || 5}-Day Check-in Streak!`;
+
+    // Default to daily self-check tab
+    showPatientPortalTab('self-check');
+}
+
+/**
+ * Switch Patient Portal Sub-tabs: 'self-check' | 'my-trends' | 'my-cbt'
+ */
+function showPatientPortalTab(tabName) {
+    const viewSelfCheck = document.getElementById("pat-view-self-check");
+    const viewTrends = document.getElementById("pat-view-trends");
+    const viewCBT = document.getElementById("pat-view-cbt");
+
+    // Subtab Buttons
+    const btnSelfCheck = document.getElementById("pat-tab-btn-self-check");
+    const btnTrends = document.getElementById("pat-tab-btn-trends");
+    const btnCBT = document.getElementById("pat-tab-btn-cbt");
+
+    // Sidebar Buttons
+    const navSelfCheck = document.getElementById("pat-nav-self-check");
+    const navTrends = document.getElementById("pat-nav-trends");
+    const navCBT = document.getElementById("pat-nav-cbt");
+
+    // Hide all panels
+    if (viewSelfCheck) viewSelfCheck.style.display = "none";
+    if (viewTrends) viewTrends.style.display = "none";
+    if (viewCBT) viewCBT.style.display = "none";
+
+    // Remove active class from buttons
+    [btnSelfCheck, btnTrends, btnCBT, navSelfCheck, navTrends, navCBT].forEach(b => {
+        if (b) b.classList.remove("active");
+    });
+
+    const pageTitle = document.getElementById("page-main-title");
+    const pageSub = document.getElementById("page-subtitle");
+
+    if (tabName === "self-check" || tabName === "daily-check") {
+        if (viewSelfCheck) viewSelfCheck.style.display = "block";
+        if (btnSelfCheck) btnSelfCheck.classList.add("active");
+        if (navSelfCheck) navSelfCheck.classList.add("active");
+        if (pageTitle) pageTitle.innerText = "My Adolescent Wellness Portal";
+        if (pageSub) pageSub.innerText = "Confidential Daily Check-in & Science-Backed Reflection";
+    } 
+    else if (tabName === "my-trends" || tabName === "trends") {
+        if (viewTrends) viewTrends.style.display = "block";
+        if (btnTrends) btnTrends.classList.add("active");
+        if (navTrends) navTrends.classList.add("active");
+        if (pageTitle) pageTitle.innerText = "My Recovery Trends & Strength";
+        if (pageSub) pageSub.innerText = "Longitudinal Mood Trajectory, Sleep Stability & Emotional Resilience";
+
+        // Refresh stats & chart
+        updatePatientRecoveryMetrics();
+        renderPatientRecoveryChart();
+    } 
+    else if (tabName === "my-cbt" || tabName === "cbt") {
+        if (viewCBT) viewCBT.style.display = "block";
+        if (btnCBT) btnCBT.classList.add("active");
+        if (navCBT) navCBT.classList.add("active");
+        if (pageTitle) pageTitle.innerText = "Coping Strategies & CBT Exercises";
+        if (pageSub) pageSub.innerText = "Interactive 4-7-8 Breathing Calmer & Negative Thought Buster";
+    }
+}
+
+function updatePatientRecoveryMetrics() {
+    const pat = patientsDB.find(p => p.id === (currentUser ? currentUser.id : "PT-1001")) || patientsDB[0];
+    const wellnessEl = document.getElementById("pat-metric-wellness");
+    const sleepEl = document.getElementById("pat-metric-sleep");
+    const streakEl = document.getElementById("pat-metric-streak");
+
+    const latestWellness = pat.recoveryHistory && pat.recoveryHistory.length 
+        ? pat.recoveryHistory[pat.recoveryHistory.length - 1] 
+        : Math.max(15, 100 - pat.riskScore);
+
+    if (wellnessEl) wellnessEl.innerText = `${latestWellness} / 100`;
+    if (sleepEl) sleepEl.innerText = `${pat.bio.sleepHours} Hrs`;
+    if (streakEl) streakEl.innerText = `${pat.streak || 5} Days`;
 }
 
 // =========================================================================
@@ -368,14 +484,20 @@ function renderRegistryStats() {
     const critical = patientsDB.filter(p => p.riskTier === "HIGH" || p.riskTier === "SEVERE").length;
     const avgScore = total > 0 ? (patientsDB.reduce((acc, p) => acc + p.riskScore, 0) / total).toFixed(1) : "0.0";
 
-    document.getElementById("stat-total-patients").innerText = total;
-    document.getElementById("sidebar-patient-count").innerText = total;
-    document.getElementById("stat-critical-alerts").innerText = critical;
-    document.getElementById("stat-avg-score").innerText = avgScore;
+    const statTotal = document.getElementById("stat-total-patients");
+    const sideCount = document.getElementById("sidebar-patient-count");
+    const statCrit = document.getElementById("stat-critical-alerts");
+    const statAvg = document.getElementById("stat-avg-score");
+
+    if (statTotal) statTotal.innerText = total;
+    if (sideCount) sideCount.innerText = total;
+    if (statCrit) statCrit.innerText = critical;
+    if (statAvg) statAvg.innerText = avgScore;
 }
 
 function renderPatientCards(filterList) {
     const container = document.getElementById("patient-cards-container");
+    if (!container) return;
     container.innerHTML = "";
 
     const list = filterList || patientsDB;
@@ -425,8 +547,10 @@ function renderPatientCards(filterList) {
 }
 
 function filterPatientRegistry() {
-    const search = document.getElementById("patient-search-input").value.toLowerCase();
-    const filterTier = document.getElementById("filter-risk-select").value;
+    const searchInput = document.getElementById("patient-search-input");
+    const tierSelect = document.getElementById("filter-risk-select");
+    const search = searchInput ? searchInput.value.toLowerCase() : "";
+    const filterTier = tierSelect ? tierSelect.value : "ALL";
 
     const filtered = patientsDB.filter(p => {
         const matchSearch = p.name.toLowerCase().includes(search) || p.id.toLowerCase().includes(search) || p.primaryConcern.toLowerCase().includes(search);
@@ -441,11 +565,13 @@ function filterPatientRegistry() {
 // 6. MULTI-PATIENT ENROLLMENT MODAL
 // =========================================================================
 function openAddPatientModal() {
-    document.getElementById("add-patient-modal").style.display = "flex";
+    const modal = document.getElementById("add-patient-modal");
+    if (modal) modal.style.display = "flex";
 }
 
 function closeAddPatientModal() {
-    document.getElementById("add-patient-modal").style.display = "none";
+    const modal = document.getElementById("add-patient-modal");
+    if (modal) modal.style.display = "none";
 }
 
 function handleAddNewPatient(event) {
@@ -491,6 +617,8 @@ function handleAddNewPatient(event) {
         ci95: ci,
         lastAssessment: new Date().toISOString().split("T")[0],
         history: [initialScore - 5, initialScore],
+        recoveryHistory: [Math.max(20, 100 - initialScore - 5), Math.max(25, 100 - initialScore)],
+        streak: 1,
         q: qValues,
         bio: bioValues,
         journal: `Enrolled on ${new Date().toLocaleDateString()}. Initial clinical observation: ${concern}`
@@ -525,38 +653,49 @@ function populatePatientDossier(patientId) {
     activePatientId = pat.id;
 
     // Update Header Banner
-    document.getElementById("dossier-avatar").innerText = pat.gender === 'Female' ? '👧' : '👦';
-    document.getElementById("dossier-patient-name").innerText = pat.name;
-    document.getElementById("dossier-patient-sub").innerText = `${pat.age}y ${pat.gender} | ID: ${pat.id} | Primary: ${pat.primaryConcern}`;
+    const avatarEl = document.getElementById("dossier-avatar");
+    const nameEl = document.getElementById("dossier-patient-name");
+    const subEl = document.getElementById("dossier-patient-sub");
+
+    if (avatarEl) avatarEl.innerText = pat.gender === 'Female' ? '👧' : '👦';
+    if (nameEl) nameEl.innerText = pat.name;
+    if (subEl) subEl.innerText = `${pat.age}y ${pat.gender} | ID: ${pat.id} | Primary: ${pat.primaryConcern}`;
 
     // Populate Patient Dropdown
     const dropdown = document.getElementById("dossier-patient-dropdown");
-    dropdown.innerHTML = "";
-    patientsDB.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p.id;
-        opt.innerText = `${p.name} (${p.id} - ${p.riskTier})`;
-        if (p.id === pat.id) opt.selected = true;
-        dropdown.appendChild(opt);
-    });
+    if (dropdown) {
+        dropdown.innerHTML = "";
+        patientsDB.forEach(p => {
+            const opt = document.createElement("option");
+            opt.value = p.id;
+            opt.innerText = `${p.name} (${p.id} - ${p.riskTier})`;
+            if (p.id === pat.id) opt.selected = true;
+            dropdown.appendChild(opt);
+        });
+    }
 
     // Populate Form Inputs
-    document.getElementById("q1").value = pat.q.q1;
-    document.getElementById("val-q1").innerText = pat.q.q1;
-    document.getElementById("q2").value = pat.q.q2;
-    document.getElementById("val-q2").innerText = pat.q.q2;
-    document.getElementById("q3").value = pat.q.q3;
-    document.getElementById("val-q3").innerText = pat.q.q3;
-    document.getElementById("q4").value = pat.q.q4;
-    document.getElementById("val-q4").innerText = pat.q.q4;
-    document.getElementById("q5").value = pat.q.q5;
-    document.getElementById("val-q5").innerText = pat.q.q5;
+    ["q1", "q2", "q3", "q4", "q5"].forEach(q => {
+        const el = document.getElementById(q);
+        const valEl = document.getElementById(`val-${q}`);
+        if (el && pat.q) el.value = pat.q[q] !== undefined ? pat.q[q] : 1;
+        if (valEl && pat.q) valEl.innerText = pat.q[q] !== undefined ? pat.q[q] : 1;
+    });
 
-    document.getElementById("bio-sleep").value = pat.bio.sleepHours;
-    document.getElementById("bio-screen").value = pat.bio.screenTime;
-    document.getElementById("bio-exercise").value = pat.bio.exerciseMinutes;
-    document.getElementById("bio-social").value = pat.bio.socialInteractions;
-    document.getElementById("journal-input").value = pat.journal;
+    if (pat.bio) {
+        const sleepEl = document.getElementById("bio-sleep");
+        const screenEl = document.getElementById("bio-screen");
+        const exEl = document.getElementById("bio-exercise");
+        const socEl = document.getElementById("bio-social");
+
+        if (sleepEl) sleepEl.value = pat.bio.sleepHours;
+        if (screenEl) screenEl.value = pat.bio.screenTime;
+        if (exEl) exEl.value = pat.bio.exerciseMinutes;
+        if (socEl) socEl.value = pat.bio.socialInteractions;
+    }
+
+    const journalEl = document.getElementById("journal-input");
+    if (journalEl) journalEl.value = pat.journal || "";
 
     // Run Assessment
     runClinicalAssessment();
@@ -599,108 +738,125 @@ function analyzeJournalLive() {
 function detectCrisisKeywords(text) {
     if (!text) return false;
     const lower = text.toLowerCase();
-    const crisisList = ["suicide", "kill myself", "end my life", "tired of everything", "cannot live anymore", "want to die", "hopeless", "self harm"];
-    return crisisList.some(w => lower.includes(w));
+    const flags = ["kill myself", "suicide", "end my life", "want to die", "hurt myself", "hopeless", "no reason to live"];
+    return flags.some(k => lower.includes(k));
 }
 
-// Core Execution
 function runClinicalAssessment() {
-    const pat = patientsDB.find(p => p.id === activePatientId);
-    if (!pat) return;
+    // 1. Gather Questionnaire Features (PHQ-9 & GAD-7 proxies)
+    const q1 = parseInt(document.getElementById("q1") ? document.getElementById("q1").value : 1);
+    const q2 = parseInt(document.getElementById("q2") ? document.getElementById("q2").value : 1);
+    const q3 = parseInt(document.getElementById("q3") ? document.getElementById("q3").value : 1);
+    const q4 = parseInt(document.getElementById("q4") ? document.getElementById("q4").value : 1);
+    const q5 = parseInt(document.getElementById("q5") ? document.getElementById("q5").value : 1);
 
-    // Collect Inputs
-    const q1 = parseInt(document.getElementById("q1").value);
-    const q2 = parseInt(document.getElementById("q2").value);
-    const q3 = parseInt(document.getElementById("q3").value);
-    const q4 = parseInt(document.getElementById("q4").value);
-    const q5 = parseInt(document.getElementById("q5").value);
+    // 2. Gather Biometric & Digital Phenotypes
+    const sleep = parseFloat(document.getElementById("bio-sleep") ? document.getElementById("bio-sleep").value : 7);
+    const screen = parseFloat(document.getElementById("bio-screen") ? document.getElementById("bio-screen").value : 6);
+    const exercise = parseFloat(document.getElementById("bio-exercise") ? document.getElementById("bio-exercise").value : 30);
+    const social = parseFloat(document.getElementById("bio-social") ? document.getElementById("bio-social").value : 4);
+    const journalText = document.getElementById("journal-input") ? document.getElementById("journal-input").value : "";
 
-    const sleepHours = parseFloat(document.getElementById("bio-sleep").value) || 7.0;
-    const screenTime = parseFloat(document.getElementById("bio-screen").value) || 4.0;
-    const exercise = parseFloat(document.getElementById("bio-exercise").value) || 30;
-    const social = parseFloat(document.getElementById("bio-social").value) || 4;
-    const journalText = document.getElementById("journal-input").value;
+    // NLP Sentiment Proxy
+    let nlpRisk = 0;
+    const textLower = journalText.toLowerCase();
+    if (textLower.includes("sad") || textLower.includes("cry") || textLower.includes("lonely") || textLower.includes("tired")) nlpRisk += 8;
+    if (textLower.includes("anxious") || textLower.includes("panic") || textLower.includes("scared") || textLower.includes("nervous")) nlpRisk += 10;
+    if (textLower.includes("exhausted") || textLower.includes("hopeless") || textLower.includes("worthless")) nlpRisk += 15;
+    if (textLower.includes("happy") || textLower.includes("great") || textLower.includes("excited") || textLower.includes("good")) nlpRisk -= 10;
 
-    // Update patient in memory
-    pat.q = { q1, q2, q3, q4, q5 };
-    pat.bio = { sleepHours, screenTime, exerciseMinutes: exercise, socialInteractions: social };
-    pat.journal = journalText;
+    // Base Subscales
+    const depScore = ((q1 + q2 + (sleep < 5 ? 2 : 0)) / 8.0) * 100;
+    const anxScore = ((q3 + q4) / 6.0) * 100;
+    const sleepDeficit = Math.max(0, (8.0 - sleep) / 5.0) * 100;
+    const screenRisk = Math.min(100, (screen / 12.0) * 100);
+    const exerciseProtective = Math.min(100, (exercise / 60.0) * 100);
 
-    // 1. Subnet Feature Extraction
-    const depScore = ((q1 + q2 + q3) / 9.0) * 100;
-    const anxScore = ((q4 + q5) / 6.0) * 100;
-    const sleepDebt = Math.max(0, (8.0 - sleepHours) / 6.0) * 100;
-    const screenRisk = Math.min(100, (screenTime / 10.0) * 100);
+    // 4-Model Ensemble Weights
+    const lstmPred = Math.min(99, Math.max(5, (depScore * 0.45 + anxScore * 0.35 + sleepDeficit * 0.20 + nlpRisk)));
+    const cnnPred = Math.min(99, Math.max(5, (anxScore * 0.40 + depScore * 0.30 + screenRisk * 0.30 + nlpRisk * 0.8)));
+    const rfPred = Math.min(99, Math.max(5, (depScore * 0.35 + sleepDeficit * 0.30 + (100 - exerciseProtective) * 0.35)));
+    const gbPred = Math.min(99, Math.max(5, (depScore * 0.38 + anxScore * 0.32 + screenRisk * 0.15 + sleepDeficit * 0.15)));
 
-    // 2. FusionNet Meta-Learner Prediction
-    const rawRisk = (depScore * 0.35) + (anxScore * 0.30) + (sleepDebt * 0.20) + (screenRisk * 0.15);
-    const calibratedRisk = Math.min(100, Math.max(5, Math.round(rawRisk)));
-
-    // 3. Monte Carlo Dropout Epistemic UQ (T = 20)
+    // Meta-Ensemble Weighted Stacking
+    const ensembleScore = Math.round(lstmPred * 0.35 + cnnPred * 0.25 + rfPred * 0.20 + gbPred * 0.20);
+    
+    // Monte Carlo Dropout Epistemic Uncertainty
     const mcSamples = [];
     for (let i = 0; i < 20; i++) {
-        const noise = (Math.random() - 0.5) * 6.5;
-        mcSamples.push(Math.min(100, Math.max(0, calibratedRisk + noise)));
+        const noise = (Math.random() - 0.5) * 8.0;
+        mcSamples.push(Math.max(0, Math.min(100, ensembleScore + noise)));
     }
-    const mean = mcSamples.reduce((a, b) => a + b, 0) / 20;
-    const variance = mcSamples.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / 20;
-    const stdDev = Math.sqrt(variance);
-    const ciLow = Math.max(0, Math.round((mean - 1.96 * stdDev) * 10) / 10);
-    const ciHigh = Math.min(100, Math.round((mean + 1.96 * stdDev) * 10) / 10);
+    const mcMean = mcSamples.reduce((a, b) => a + b, 0) / mcSamples.length;
+    const mcStd = Math.sqrt(mcSamples.map(x => Math.pow(x - mcMean, 2)).reduce((a, b) => a + b, 0) / mcSamples.length);
+    const ciLow = Math.max(0, Math.round((mcMean - 1.96 * mcStd) * 10) / 10);
+    const ciHigh = Math.min(100, Math.round((mcMean + 1.96 * mcStd) * 10) / 10);
 
-    // 4. Update Risk Tier
+    // Determine Risk Tier
     let tier = "LOW";
-    if (calibratedRisk >= 75) tier = "SEVERE";
-    else if (calibratedRisk >= 50) tier = "HIGH";
-    else if (calibratedRisk >= 25) tier = "MODERATE";
+    let tierClass = "low";
+    if (ensembleScore >= 75) { tier = "SEVERE"; tierClass = "severe"; }
+    else if (ensembleScore >= 60) { tier = "HIGH"; tierClass = "high"; }
+    else if (ensembleScore >= 40) { tier = "MODERATE"; tierClass = "moderate"; }
+    else if (ensembleScore >= 25) { tier = "MILD"; tierClass = "mild"; }
 
-    pat.riskScore = calibratedRisk;
-    pat.riskTier = tier;
-    pat.ci95 = [ciLow, ciHigh];
-    pat.lastAssessment = new Date().toISOString().split("T")[0];
+    // Update Dossier UI
+    const scoreValEl = document.getElementById("dossier-risk-score-val");
+    const tierBadgeEl = document.getElementById("dossier-risk-tier-badge");
+    const ciEl = document.getElementById("dossier-ci-val");
+    const stdEl = document.getElementById("dossier-std-val");
 
-    // Save to LocalStorage
-    savePatientsToStorage();
+    if (scoreValEl) scoreValEl.innerText = `${ensembleScore} / 100`;
+    if (tierBadgeEl) {
+        tierBadgeEl.innerText = `${tier} RISK`;
+        tierBadgeEl.className = `risk-badge ${tierClass}`;
+    }
+    if (ciEl) ciEl.innerText = `[${ciLow} – ${ciHigh}]`;
+    if (stdEl) stdEl.innerText = `±${mcStd.toFixed(2)}`;
 
-    // 5. Update UI Displays
-    document.getElementById("inf-risk-score").innerText = calibratedRisk;
-    const badge = document.getElementById("inf-risk-badge");
-    badge.className = `risk-badge ${tier.toLowerCase()}`;
-    badge.innerText = `${tier} RISK`;
-    document.getElementById("inf-ci-badge").innerText = `95% CI: [${ciLow} – ${ciHigh}]`;
+    // Update active patient object in DB
+    const activePat = patientsDB.find(p => p.id === activePatientId);
+    if (activePat) {
+        activePat.riskScore = ensembleScore;
+        activePat.riskTier = tier;
+        activePat.ci95 = [ciLow, ciHigh];
+        activePat.q = { q1, q2, q3, q4, q5 };
+        activePat.bio = { sleepHours: sleep, screenTime: screen, exerciseMinutes: exercise, socialInteractions: social };
+        activePat.journal = journalText;
+        savePatientsToStorage();
+    }
 
-    const gaugeCircle = document.getElementById("risk-circle-gauge");
-    const col = tier === "SEVERE" ? "#EF4444" : (tier === "HIGH" ? "#F97316" : (tier === "MODERATE" ? "#F59E0B" : "#10B981"));
-    gaugeCircle.style.background = `conic-gradient(${col} 0% ${calibratedRisk}%, #1F2937 ${calibratedRisk}% 100%)`;
-
-    // 6. Render Charts
-    renderRadarChart([depScore, anxScore, sleepDebt, screenRisk]);
-    renderEnsembleChart([depScore, anxScore, sleepDebt, calibratedRisk]);
+    // Render Charts
+    renderRadarChart(depScore, anxScore, sleepDeficit, screenRisk, 100 - exerciseProtective, Math.max(0, nlpRisk + 20));
+    renderEnsembleChart(lstmPred, cnnPred, rfPred, gbPred, ensembleScore);
     renderMCHistogram(mcSamples);
-    renderSHAPChart(depScore, anxScore, sleepDebt, screenTime, exercise);
-    renderTrajectoryChart(pat.history, calibratedRisk);
-    renderCBTPlans(tier, depScore, anxScore, sleepDebt);
+    renderSHAPChart(depScore, anxScore, sleepDeficit, screenRisk, exerciseProtective);
+    renderTrajectoryChart(activePat ? activePat.history : [35, 45, 50], ensembleScore);
+    renderCBTPlans(tier, depScore, anxScore, sleepDeficit);
 }
 
 // =========================================================================
-// 8. CHART.JS VISUALIZATIONS
+// 8. CHART.JS VISUALIZATION RENDERERS
 // =========================================================================
-function renderRadarChart(scores) {
-    const ctx = document.getElementById("radarChart").getContext("2d");
+function renderRadarChart(dep, anx, sleep, screen, sedentary, nlp) {
+    const canvas = document.getElementById("clinicalRadarChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     if (radarChartInstance) radarChartInstance.destroy();
 
     radarChartInstance = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['Depressive Affect', 'Somatic Anxiety', 'Sleep Architecture', 'Digital Screen Burden'],
+            labels: ['Depressive Affect', 'Anxiety & Panic', 'Sleep Debt', 'Excess Screen', 'Physical Inactivity', 'Affective Sentiment'],
             datasets: [{
-                label: 'Domain Risk Score (0-100)',
-                data: scores,
+                label: 'Clinical Dimension Severity',
+                data: [dep, anx, sleep, screen, sedentary, nlp],
                 backgroundColor: 'rgba(56, 189, 248, 0.2)',
                 borderColor: '#38BDF8',
                 pointBackgroundColor: '#0284C7',
                 pointBorderColor: '#fff',
-                borderWidth: 2
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: '#38BDF8'
             }]
         },
         options: {
@@ -711,27 +867,38 @@ function renderRadarChart(scores) {
                     angleLines: { color: '#374151' },
                     grid: { color: '#374151' },
                     pointLabels: { color: '#9CA3AF', font: { size: 11, family: 'Plus Jakarta Sans' } },
-                    ticks: { color: '#6B7280', backdropColor: 'transparent', stepSize: 25 },
-                    min: 0,
-                    max: 100
+                    suggestedMin: 0,
+                    suggestedMax: 100,
+                    ticks: { display: false }
                 }
             },
-            plugins: { legend: { display: false } }
+            plugins: {
+                legend: { display: false }
+            }
         }
     });
 }
 
-function renderEnsembleChart(subScores) {
-    const ctx = document.getElementById("ensembleBarChart").getContext("2d");
+function renderEnsembleChart(lstm, cnn, rf, gb, ensemble) {
+    const canvas = document.getElementById("ensembleBarChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     if (ensembleBarInstance) ensembleBarInstance.destroy();
 
     ensembleBarInstance = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: ['DepNet (BiLSTM)', 'AnxNet (1D-CNN)', 'SleepNet (TCN)', 'FusionNet Meta-Score'],
+            labels: ['LSTM (Temporal)', 'CNN-1D (Acoustic/NLP)', 'Random Forest', 'Gradient Boosting', 'Meta-Ensemble'],
             datasets: [{
-                data: subScores,
-                backgroundColor: ['#38BDF8', '#FBBF24', '#A855F7', '#EF4444'],
+                label: 'Risk Prediction',
+                data: [lstm, cnn, rf, gb, ensemble],
+                backgroundColor: [
+                    '#38BDF8',
+                    '#818CF8',
+                    '#34D399',
+                    '#FBBF24',
+                    '#F87171'
+                ],
                 borderRadius: 6
             }]
         },
@@ -742,36 +909,41 @@ function renderEnsembleChart(subScores) {
                 y: { min: 0, max: 100, grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
                 x: { grid: { display: false }, ticks: { color: '#9CA3AF' } }
             },
-            plugins: { legend: { display: false } }
+            plugins: {
+                legend: { display: false }
+            }
         }
     });
 }
 
 function renderMCHistogram(samples) {
-    const ctx = document.getElementById("mcHistChart").getContext("2d");
+    const canvas = document.getElementById("mcHistChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     if (mcHistInstance) mcHistInstance.destroy();
 
     mcHistInstance = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: samples.map((_, i) => `Pass ${i + 1}`),
+            labels: samples.map((_, i) => `T=${i + 1}`),
             datasets: [{
-                label: 'Stochastic Sample Risk',
+                label: 'Dropout Sample Score',
                 data: samples,
                 borderColor: '#F59E0B',
                 backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                borderWidth: 2,
                 fill: true,
                 tension: 0.3,
                 pointRadius: 4,
-                pointBackgroundColor: '#FBBF24'
+                pointBackgroundColor: '#F59E0B'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                y: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
-                x: { grid: { display: false }, ticks: { color: '#6B7280' } }
+                y: { min: 0, max: 100, grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } },
+                x: { grid: { color: '#374151' }, ticks: { color: '#9CA3AF' } }
             },
             plugins: { legend: { display: false } }
         }
@@ -779,24 +951,26 @@ function renderMCHistogram(samples) {
 }
 
 function renderSHAPChart(dep, anx, sleep, screen, exercise) {
-    const ctx = document.getElementById("shapBarChart").getContext("2d");
+    const canvas = document.getElementById("shapBarChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     if (shapBarInstance) shapBarInstance.destroy();
 
     const shapValues = [
-        +(dep * 0.18).toFixed(1),
-        +(anx * 0.15).toFixed(1),
-        +(sleep * 0.12).toFixed(1),
-        +((screen - 4) * 1.5).toFixed(1),
-        -((exercise / 30) * 3.5).toFixed(1)
+        Math.round(dep * 0.28),
+        Math.round(anx * 0.22),
+        Math.round(sleep * 0.18),
+        Math.round(screen * 0.12),
+        -Math.round(exercise * 0.20)
     ];
 
     shapBarInstance = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: [
-                'Depression Symptoms (PHQ-9)',
-                'Anxiety & Nervousness (GAD-7)',
-                'Sleep Architecture Debt (PSQI)',
+                'Depressive Symptom Load (PHQ-9)',
+                'Anxiety & Somatic Panic (GAD-7)',
+                'Circadian Sleep Debt (<6h)',
                 'Excess Screen Exposure',
                 'Protective: Physical Exercise'
             ],
@@ -827,7 +1001,9 @@ function renderSHAPChart(dep, anx, sleep, screen, exercise) {
 }
 
 function renderTrajectoryChart(history, currentScore) {
-    const ctx = document.getElementById("trajectoryChart").getContext("2d");
+    const canvas = document.getElementById("trajectoryChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
     if (trajectoryChartInstance) trajectoryChartInstance.destroy();
 
     const fullHistory = [...history, currentScore];
@@ -872,6 +1048,7 @@ function renderTrajectoryChart(history, currentScore) {
 
 function renderCBTPlans(tier, dep, anx, sleep) {
     const container = document.getElementById("cbt-plans-container");
+    if (!container) return;
     container.innerHTML = "";
 
     const plans = [
@@ -902,32 +1079,292 @@ function renderCBTPlans(tier, dep, anx, sleep) {
 }
 
 // =========================================================================
-// 9. PATIENT SELF-ASSESSMENT ACTIONS
+// 9. PATIENT SELF-ASSESSMENT & INTERACTIVE TOOLS (Trends, 4-7-8 & CBT)
 // =========================================================================
+
 function updatePatSlider(slider) {
     const labels = ["Great / Energetic", "Good", "Low / Fatigued", "Severely Drained"];
-    document.getElementById("pat-val-mood").innerText = labels[slider.value] || "Good";
+    const valEl = document.getElementById("pat-val-mood");
+    if (valEl) valEl.innerText = labels[slider.value] || "Good";
 }
 
 function updatePatSleep(slider) {
-    document.getElementById("pat-val-sleep").innerText = `${slider.value} Hours`;
+    const valEl = document.getElementById("pat-val-sleep");
+    if (valEl) valEl.innerText = `${slider.value} Hours`;
 }
 
 function updatePatStress(slider) {
     const labels = ["None", "Mild", "Moderate", "Severe Stress"];
-    document.getElementById("pat-val-stress").innerText = labels[slider.value] || "Mild";
+    const valEl = document.getElementById("pat-val-stress");
+    if (valEl) valEl.innerText = labels[slider.value] || "Mild";
 }
 
 function submitPatientSelfCheck() {
-    alert("✅ Thank you! Your daily wellness check-in has been saved securely on your device.");
+    const moodSlider = document.getElementById("pat-slider-mood");
+    const sleepSlider = document.getElementById("pat-slider-sleep");
+    const stressSlider = document.getElementById("pat-slider-stress");
+    const journalInput = document.getElementById("pat-journal-text");
+
+    const moodVal = moodSlider ? parseInt(moodSlider.value) : 1;
+    const sleepVal = sleepSlider ? parseFloat(sleepSlider.value) : 7;
+    const stressVal = stressSlider ? parseInt(stressSlider.value) : 1;
+    const reflection = journalInput ? journalInput.value.trim() : "";
+
+    // Calculate wellness score (0-100, higher is healthier)
+    let wellnessScore = 80;
+    if (moodVal === 0) wellnessScore += 15;
+    else if (moodVal === 1) wellnessScore += 5;
+    else if (moodVal === 2) wellnessScore -= 15;
+    else if (moodVal === 3) wellnessScore -= 35;
+
+    if (sleepVal >= 7.5 && sleepVal <= 9.5) wellnessScore += 10;
+    else if (sleepVal < 6) wellnessScore -= (6 - sleepVal) * 8;
+
+    if (stressVal === 0) wellnessScore += 10;
+    else if (stressVal === 1) wellnessScore += 0;
+    else if (stressVal === 2) wellnessScore -= 15;
+    else if (stressVal === 3) wellnessScore -= 30;
+
+    wellnessScore = Math.max(10, Math.min(98, Math.round(wellnessScore)));
+
+    // Update active patient in DB
+    const pat = patientsDB.find(p => p.id === (currentUser ? currentUser.id : "PT-1001")) || patientsDB[0];
+    if (!pat.recoveryHistory) pat.recoveryHistory = [62, 65, 71, 78, 82];
+    pat.recoveryHistory.push(wellnessScore);
+    pat.streak = (pat.streak || 5) + 1;
+    pat.bio.sleepHours = sleepVal;
+    if (reflection) pat.journal = reflection;
+
+    savePatientsToStorage();
+
+    // Update DOM status
+    const statusMsgEl = document.getElementById("patient-wellness-status");
+    const detailMsgEl = document.getElementById("patient-wellness-msg");
+    if (statusMsgEl) {
+        if (wellnessScore >= 75) statusMsgEl.innerText = "🌟 Outstanding Wellness!";
+        else if (wellnessScore >= 50) statusMsgEl.innerText = "👍 Stable & Balanced";
+        else statusMsgEl.innerText = "💙 Take It Easy Today";
+    }
+    if (detailMsgEl) {
+        detailMsgEl.innerText = `Today's calculated wellness score is ${wellnessScore}/100. Streak updated to ${pat.streak} days!`;
+    }
+
+    alert(`✅ Daily Check-in Saved!\n\nToday's Personal Wellness Score: ${wellnessScore} / 100\nConsecutive Streak: ${pat.streak} Days\nAll reflections are saved securely on your device.`);
+
+    // If on trends tab or viewing, refresh chart
+    updatePatientRecoveryMetrics();
+    renderPatientRecoveryChart();
 }
 
+/**
+ * Render Chart.js Recovery Trends for Adolescent Patient Portal
+ */
+function renderPatientRecoveryChart() {
+    const canvas = document.getElementById("patientRecoveryChart");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (patientRecoveryChartInstance) patientRecoveryChartInstance.destroy();
+
+    const pat = patientsDB.find(p => p.id === (currentUser ? currentUser.id : "PT-1001")) || patientsDB[0];
+    const dataPoints = pat.recoveryHistory && pat.recoveryHistory.length ? pat.recoveryHistory : [60, 64, 70, 75, 82];
+    const labels = dataPoints.map((_, idx) => `Check-in ${idx + 1}`);
+
+    patientRecoveryChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Personal Wellness & Strength Score',
+                    data: dataPoints,
+                    borderColor: '#10B981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    pointRadius: 6,
+                    pointHoverRadius: 8,
+                    pointBackgroundColor: '#059669',
+                    pointBorderColor: '#FFFFFF',
+                    pointBorderWidth: 2
+                },
+                {
+                    label: 'Resilience Baseline Target (75)',
+                    data: labels.map(() => 75),
+                    borderColor: '#38BDF8',
+                    borderDash: [6, 4],
+                    borderWidth: 1.5,
+                    pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 100,
+                    grid: { color: '#374151' },
+                    ticks: { color: '#9CA3AF', stepSize: 20 }
+                },
+                x: {
+                    grid: { color: '#374151' },
+                    ticks: { color: '#9CA3AF' }
+                }
+            },
+            plugins: {
+                legend: {
+                    labels: { color: '#E2E8F0', font: { family: 'Plus Jakarta Sans', size: 12 } }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => `Wellness Score: ${ctx.raw} / 100`
+                    }
+                }
+            }
+        }
+    });
+}
+
+/**
+ * 4-7-8 Deep Breathing Exercise Animated Controller
+ */
+function toggleBreathingExercise() {
+    const circle = document.getElementById("breathing-circle");
+    const phaseText = document.getElementById("breathing-phase");
+    const toggleBtn = document.getElementById("breathing-toggle-btn");
+
+    if (isBreathingActive) {
+        // Stop breathing
+        clearInterval(breathingInterval);
+        breathingInterval = null;
+        isBreathingActive = false;
+        if (circle) {
+            circle.className = "breathing-circle-outer";
+        }
+        if (phaseText) phaseText.innerText = "Paused. Tap Start to Begin";
+        if (toggleBtn) {
+            toggleBtn.innerHTML = "<span>▶️ Start 2-Minute Breathing</span>";
+            toggleBtn.className = "btn btn-primary";
+        }
+        return;
+    }
+
+    // Start breathing cycle
+    isBreathingActive = true;
+    if (toggleBtn) {
+        toggleBtn.innerHTML = "<span>⏹️ Pause Breathing Exercise</span>";
+        toggleBtn.className = "btn btn-outline";
+    }
+
+    let cycleSeconds = 0; // 0..18 loop (4s inhale + 7s hold + 8s exhale = 19s total)
+
+    const stepFunction = () => {
+        const step = cycleSeconds % 19;
+
+        if (step < 4) {
+            // Inhale phase: 4 seconds
+            const rem = 4 - step;
+            if (circle) circle.className = "breathing-circle-outer expanding";
+            if (phaseText) phaseText.innerText = `🌬️ Inhale Deeply (${rem}s)`;
+        } else if (step < 11) {
+            // Hold phase: 7 seconds (from 4 to 10)
+            const rem = 11 - step;
+            if (circle) circle.className = "breathing-circle-outer holding";
+            if (phaseText) phaseText.innerText = `⏸️ Hold Breath (${rem}s)`;
+        } else {
+            // Exhale phase: 8 seconds (from 11 to 18)
+            const rem = 19 - step;
+            if (circle) circle.className = "breathing-circle-outer contracting";
+            if (phaseText) phaseText.innerText = `💨 Exhale Slowly (${rem}s)`;
+        }
+
+        cycleSeconds++;
+    };
+
+    stepFunction();
+    breathingInterval = setInterval(stepFunction, 1000);
+}
+
+/**
+ * CBT Negative Thought Reframer
+ */
+const SAMPLE_REFRAMES = [
+    {
+        pattern: "fail",
+        distortion: "Catastrophizing & Predicting the Future",
+        reframe: "“Having a difficult test or moment does not mean I am a failure. Every mistake is useful data that helps me grow, and I can ask for guidance one step at a time.”",
+        action: "Action: Write down 1 specific thing you understand well, and review 1 topic you need help with."
+    },
+    {
+        pattern: "nobody",
+        distortion: "Mind Reading & All-or-Nothing Thinking",
+        reframe: "“People often have their own silent worries and stress. Just because someone didn't reply immediately doesn't mean they don't care about me.”",
+        action: "Action: Send a simple 'thinking of you' message to a close friend or family member."
+    },
+    {
+        pattern: "ugly",
+        distortion: "Negative Mental Filtering",
+        reframe: "“My worth is not defined by filtered social media standards or temporary feelings. My kindness, creativity, and unique perspective matter most.”",
+        action: "Action: Put your phone away for 30 minutes and engage in a hobby you enjoy."
+    },
+    {
+        pattern: "hate",
+        distortion: "Emotional Reasoning",
+        reframe: "“I am feeling deeply frustrated right now, but intense feelings are like weather storms—they peak and then pass. I can take three calm breaths before deciding.”",
+        action: "Action: Drink a cold glass of water and stretch for 2 minutes."
+    },
+    {
+        pattern: "default",
+        distortion: "Cognitive Overgeneralization",
+        reframe: "“Feeling overwhelmed is a sign that I need to slow down, not that I am incapable. I don't have to solve everything today—just the very next small step.”",
+        action: "Action: Break down your biggest task into 3 tiny 10-minute micro-tasks."
+    }
+];
+
+function generateThoughtReframe() {
+    const inputEl = document.getElementById("cbt-unhelpful-thought");
+    const resultBox = document.getElementById("cbt-reframed-result");
+    const textEl = document.getElementById("cbt-reframed-text");
+
+    const rawThought = inputEl ? inputEl.value.trim().toLowerCase() : "";
+
+    let matched = SAMPLE_REFRAMES[SAMPLE_REFRAMES.length - 1]; // default
+
+    if (rawThought) {
+        for (const item of SAMPLE_REFRAMES) {
+            if (rawThought.includes(item.pattern)) {
+                matched = item;
+                break;
+            }
+        }
+    } else {
+        if (inputEl) inputEl.value = "I am going to mess up the exam tomorrow and ruin my future...";
+        matched = SAMPLE_REFRAMES[0];
+    }
+
+    if (resultBox && textEl) {
+        resultBox.style.display = "block";
+        textEl.innerHTML = `
+            <b>🔍 Cognitive Distortion Identified:</b> <span style="color: #FBBF24;">${matched.distortion}</span><br><br>
+            <b>💡 Balanced Reframe:</b> ${matched.reframe}<br><br>
+            <span style="color: #34D399; font-weight: 600;">${matched.action}</span>
+        `;
+    }
+}
+
+// =========================================================================
+// 10. MODAL & EXPORT HELPERS
+// =========================================================================
 function showEmergencyModal() {
-    document.getElementById("crisis-emergency-modal").style.display = "flex";
+    const modal = document.getElementById("crisis-emergency-modal");
+    if (modal) modal.style.display = "flex";
 }
 
 function closeCrisisModal() {
-    document.getElementById("crisis-emergency-modal").style.display = "none";
+    const modal = document.getElementById("crisis-emergency-modal");
+    if (modal) modal.style.display = "none";
 }
 
 function exportActiveRecord() {

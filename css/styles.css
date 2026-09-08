@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Smart Health Risk Indicator (SHRI) - Modern Medical SaaS Stylesheet v3.0
+   Smart Health Risk Indicator (SHRI) - Modern Medical SaaS Stylesheet v3.1
    ========================================================================== */
 
 :root {
@@ -329,7 +329,7 @@ textarea:focus {
 
 /* ==========================================================================
    2. MAIN APPLICATION LAYOUT & SIDEBAR
-   ========================================================================= */
+   ========================================================================== */
 .app-container {
     display: flex;
     min-height: 100vh;
@@ -846,11 +846,13 @@ textarea:focus {
     color: white;
 }
 
-.tab-content {
+.tab-content,
+.patient-sub-panel {
     display: none;
 }
 
-.tab-content.active {
+.tab-content.active,
+.patient-sub-panel.active {
     display: block;
     animation: fadeIn 0.3s ease;
 }
@@ -881,6 +883,12 @@ textarea:focus {
     font-size: 15px;
     font-weight: 700;
     color: #F9FAFB;
+}
+
+.card-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 14px;
 }
 
 .badge {
@@ -1048,7 +1056,7 @@ textarea:focus {
 }
 
 /* ==========================================================================
-   6. PATIENT SELF-ASSESSMENT PORTAL
+   6. PATIENT PORTAL & INTERACTIVE COPING TOOLS
    ========================================================================== */
 .patient-welcome-banner {
     background: linear-gradient(135deg, #1E3A8A 0%, #0F172A 100%);
@@ -1111,6 +1119,72 @@ textarea:focus {
 .patient-coping-card p {
     font-size: 12px;
     color: var(--text-secondary);
+}
+
+/* Interactive Breathing Widget */
+.breathing-widget-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 0;
+}
+
+.breathing-circle-outer {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.3) 0%, rgba(2, 132, 199, 0.1) 70%);
+    border: 3px solid #38BDF8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+    transition: transform 4s ease-in-out;
+}
+
+.breathing-circle-outer.expanding {
+    transform: scale(1.4);
+    border-color: #34D399;
+    box-shadow: 0 0 40px rgba(52, 211, 153, 0.5);
+}
+
+.breathing-circle-outer.holding {
+    transform: scale(1.4);
+    border-color: #FBBF24;
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.5);
+}
+
+.breathing-circle-outer.contracting {
+    transform: scale(1.0);
+    border-color: #38BDF8;
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+}
+
+.breathing-phase-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #F9FAFB;
+    text-align: center;
+}
+
+/* Thought Reframing Box */
+.reframed-box {
+    background: #0B0F19;
+    border: 1px solid #10B981;
+    border-radius: 12px;
+    padding: 14px;
+    animation: fadeIn 0.3s ease;
+}
+
+.reframed-box h4 {
+    color: #34D399;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.reframed-box p {
+    color: #E2E8F0;
+    font-size: 12.5px;
 }
 
 /* ==========================================================================
