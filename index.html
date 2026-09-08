@@ -14,403 +14,785 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <div class="app-container">
+
+    <!-- =========================================================================
+         SECTION 1: UNIFIED AUTHENTICATION PORTAL (Doctor & Patient Login / Register)
+         ========================================================================= -->
+    <div id="auth-section" class="auth-wrapper">
+        <div class="auth-container">
+            <!-- Brand Header -->
+            <div class="auth-brand">
+                <div class="brand-logo-badge">🧠</div>
+                <h1>Smart Health Risk Indicator</h1>
+                <p class="auth-tagline">Browser-Native Multimodal AI Clinical Decision Support System</p>
+                <div class="auth-pill-badges">
+                    <span class="auth-pill">🔒 100% On-Device Privacy</span>
+                    <span class="auth-pill">⚡ Sub-20ms ML Inference</span>
+                    <span class="auth-pill">🎯 95% Confidence Intervals</span>
+                </div>
+            </div>
+
+            <!-- Role Selector Tabs -->
+            <div class="role-selector">
+                <button type="button" class="role-btn active" id="role-doctor-btn" onclick="switchAuthRole('doctor')">
+                    <span class="role-icon">👨‍⚕️</span>
+                    <span class="role-title">Clinician / Doctor</span>
+                    <span class="role-desc">Patient Registry & XAI Analytics</span>
+                </button>
+                <button type="button" class="role-btn" id="role-patient-btn" onclick="switchAuthRole('patient')">
+                    <span class="role-icon">👤</span>
+                    <span class="role-title">Adolescent Patient</span>
+                    <span class="role-desc">Self-Check & CBT Coping</span>
+                </button>
+            </div>
+
+            <!-- Auth Mode Switcher (Sign In vs Register) -->
+            <div class="auth-mode-toggle">
+                <button type="button" class="mode-btn active" id="mode-login-btn" onclick="switchAuthMode('login')">Sign In</button>
+                <button type="button" class="mode-btn" id="mode-register-btn" onclick="switchAuthMode('register')">Register / New Account</button>
+            </div>
+
+            <!-- Quick Demo 1-Click Logins -->
+            <div class="demo-login-box">
+                <span class="demo-label">⚡ Quick Presentation Demo Login:</span>
+                <div class="demo-btn-group">
+                    <button type="button" class="demo-btn" onclick="quickDemoLogin('doctor')">
+                        👨‍⚕️ Sign In as <b>Dr. Ramesh S (Lead Clinician)</b>
+                    </button>
+                    <button type="button" class="demo-btn secondary" onclick="quickDemoLogin('patient')">
+                        👤 Sign In as <b>Aarav Singh (Adolescent Patient)</b>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Doctor Login Form -->
+            <form id="doctor-login-form" class="auth-form active" onsubmit="handleDoctorLogin(event)">
+                <div class="form-group">
+                    <label for="doc-email">Doctor Email / Medical ID</label>
+                    <input type="text" id="doc-email" placeholder="e.g. dr.ramesh@hospital.org" value="dr.ramesh@srmist.edu.in" required>
+                </div>
+                <div class="form-group">
+                    <label for="doc-password">Password</label>
+                    <input type="password" id="doc-password" placeholder="••••••••" value="doctor123" required>
+                </div>
+                <div class="form-group">
+                    <label for="doc-clinic">Department / Hospital Center</label>
+                    <select id="doc-clinic">
+                        <option value="Adolescent Psychiatry Unit">Department of Adolescent Psychiatry & Wellness</option>
+                        <option value="School Counseling Department">School Mental Health & Counseling Center</option>
+                        <option value="Community Clinical Outpatient">Community Health & Behavioral Clinic</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit-btn">
+                    <span>Access Doctor Clinical Portal</span> →
+                </button>
+            </form>
+
+            <!-- Doctor Registration Form -->
+            <form id="doctor-reg-form" class="auth-form" onsubmit="handleDoctorRegister(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-doc-name">Full Name with Title</label>
+                        <input type="text" id="reg-doc-name" placeholder="e.g. Dr. Priya Sharma" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-doc-license">Medical License / Staff ID</label>
+                        <input type="text" id="reg-doc-license" placeholder="e.g. NWC-MED-4492" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-doc-email">Official Institutional Email</label>
+                    <input type="email" id="reg-doc-email" placeholder="e.g. priya.sharma@health.gov.in" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-doc-password">Create Secure Password</label>
+                    <input type="password" id="reg-doc-password" placeholder="Minimum 6 characters" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-doc-dept">Specialization</label>
+                    <select id="reg-doc-dept">
+                        <option value="Adolescent Psychiatry">Child & Adolescent Psychiatry</option>
+                        <option value="Clinical Psychology">Clinical Psychology</option>
+                        <option value="School Mental Health Counselor">School Mental Health Counselor</option>
+                        <option value="Neuropsychiatry">Pediatric Neuropsychiatry</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit-btn">
+                    <span>Create Doctor Profile & Login</span> →
+                </button>
+            </form>
+
+            <!-- Patient Login Form -->
+            <form id="patient-login-form" class="auth-form" onsubmit="handlePatientLogin(event)">
+                <div class="form-group">
+                    <label for="pat-login-id">Patient / Student ID or Email</label>
+                    <input type="text" id="pat-login-id" placeholder="e.g. PT-1001 or aarav@school.edu" value="PT-1001" required>
+                </div>
+                <div class="form-group">
+                    <label for="pat-password">Password</label>
+                    <input type="password" id="pat-password" placeholder="••••••••" value="patient123" required>
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit-btn">
+                    <span>Access My Wellness Dashboard</span> →
+                </button>
+            </form>
+
+            <!-- Patient Registration Form -->
+            <form id="patient-reg-form" class="auth-form" onsubmit="handlePatientRegister(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-pat-name">Adolescent Full Name</label>
+                        <input type="text" id="reg-pat-name" placeholder="e.g. Rohan Verma" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-pat-age">Age (10 – 18 Years)</label>
+                        <input type="number" id="reg-pat-age" min="10" max="18" value="15" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reg-pat-gender">Gender</label>
+                        <select id="reg-pat-gender">
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Non-Binary / Other">Non-Binary / Other</option>
+                            <option value="Prefer not to say">Prefer not to say</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-pat-id">Student / Assigned ID</label>
+                        <input type="text" id="reg-pat-id" placeholder="e.g. PT-1005" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="reg-pat-email">Email / Guardian Contact</label>
+                    <input type="email" id="reg-pat-email" placeholder="e.g. student@school.org" required>
+                </div>
+                <div class="form-group">
+                    <label for="reg-pat-password">Create Password</label>
+                    <input type="password" id="reg-pat-password" placeholder="Minimum 6 characters" required>
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit-btn">
+                    <span>Register Patient Profile</span> →
+                </button>
+            </form>
+
+            <!-- Auth Footer -->
+            <div class="auth-footer">
+                <div class="footer-status">
+                    <span class="pulse-dot"></span>
+                    <span>Client-Side TensorFlow.js Core Ready</span>
+                </div>
+                <span class="footer-privacy">HIPAA / GDPR On-Device Privacy Architecture</span>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- =========================================================================
+         SECTION 2: MAIN APPLICATION PORTAL (Loaded upon Authentication)
+         ========================================================================= -->
+    <div id="main-app-section" class="app-container" style="display: none;">
+        
         <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="brand">
                 <div class="brand-icon">🧠</div>
                 <div class="brand-text">
                     <h2>SHRI Portal</h2>
-                    <span>Smart Health Risk Indicator · v3.0</span>
+                    <span>Smart Health Risk Indicator v3.0</span>
                 </div>
             </div>
 
-            <div class="patient-preset-box">
-                <label for="patient-select">Select Patient Preset:</label>
-                <select id="patient-select">
-                    <option value="pooja">Pooja Patel (16y, High Risk)</option>
-                    <option value="aarav">Aarav Sharma (14y, Mild Anxiety)</option>
-                    <option value="rohan">Rohan Verma (12y, Baseline)</option>
-                </select>
+            <!-- Current User Badge -->
+            <div class="user-session-card">
+                <div class="user-avatar" id="sidebar-user-avatar">👨‍⚕️</div>
+                <div class="user-info">
+                    <h4 id="sidebar-user-name">Dr. Ramesh S</h4>
+                    <span class="user-role-badge" id="sidebar-user-role">Lead Clinician</span>
+                </div>
             </div>
 
-            <nav class="nav-menu">
-                <button class="nav-item active" data-tab="assessment">
-                    <span class="icon">🩺</span> Live Assessment
+            <!-- Doctor-Only Navigation -->
+            <div id="doctor-nav-section" class="nav-section">
+                <div class="nav-section-title">CLINICIAN MANAGEMENT</div>
+                <button class="nav-item active" id="nav-registry-btn" onclick="showDoctorRegistry()">
+                    <span class="icon">📋</span> Patient Registry <span class="badge" id="sidebar-patient-count">4</span>
                 </button>
-                <button class="nav-item" data-tab="ensemble">
-                    <span class="icon">🧠</span> 4-Model Ensemble & MC
+                <button class="nav-item" id="nav-dossier-btn" onclick="showPatientDossier()">
+                    <span class="icon">📊</span> Patient Clinical Dossier
                 </button>
-                <button class="nav-item" data-tab="shap">
-                    <span class="icon">🔍</span> SHAP Explainability
+                <button class="nav-item" onclick="openAddPatientModal()">
+                    <span class="icon">➕</span> Enroll New Patient
                 </button>
-                <button class="nav-item" data-tab="trajectory">
-                    <span class="icon">📈</span> Trajectory & Anomaly
-                </button>
-                <button class="nav-item" data-tab="cbt">
-                    <span class="icon">💊</span> CBT Action Plans
-                </button>
-            </nav>
+            </div>
 
+            <!-- Patient Detailed Tabs (When inside Patient Dossier) -->
+            <div id="clinical-tabs-section" class="nav-section" style="display: none;">
+                <div class="nav-section-title">ACTIVE PATIENT DOSSIER</div>
+                <button class="nav-sub-item active" data-tab="assessment" onclick="switchDossierTab('assessment')">
+                    <span class="icon">📝</span> Multimodal Assessment
+                </button>
+                <button class="nav-sub-item" data-tab="ensemble" onclick="switchDossierTab('ensemble')">
+                    <span class="icon">🧠</span> 4-Model Ensemble & UQ
+                </button>
+                <button class="nav-sub-item" data-tab="shap" onclick="switchDossierTab('shap')">
+                    <span class="icon">🔍</span> Permutation SHAP XAI
+                </button>
+                <button class="nav-sub-item" data-tab="trajectory" onclick="switchDossierTab('trajectory')">
+                    <span class="icon">📈</span> Longitudinal Trajectory
+                </button>
+                <button class="nav-sub-item" data-tab="cbt" onclick="switchDossierTab('cbt')">
+                    <span class="icon">🛡️</span> CBT Action Plans
+                </button>
+            </div>
+
+            <!-- Patient-Only Navigation -->
+            <div id="patient-nav-section" class="nav-section" style="display: none;">
+                <div class="nav-section-title">MY WELLNESS PORTAL</div>
+                <button class="nav-item active" onclick="showPatientPortalTab('self-check')">
+                    <span class="icon">🧘</span> Daily Self-Check
+                </button>
+                <button class="nav-item" onclick="showPatientPortalTab('my-trends')">
+                    <span class="icon">📊</span> My Recovery Trends
+                </button>
+                <button class="nav-item" onclick="showPatientPortalTab('my-cbt')">
+                    <span class="icon">🛡️</span> Coping Strategies
+                </button>
+                <button class="nav-item" onclick="showEmergencyModal()">
+                    <span class="icon">🚨</span> 24/7 Helpline Support
+                </button>
+            </div>
+
+            <!-- Sidebar Footer -->
             <div class="sidebar-footer">
                 <div class="model-badge">
                     <span class="dot"></span> Client-Side ML Active
                 </div>
-                <p>Zero Cloud Latency · Zero Data Leak</p>
+                <button class="logout-btn" onclick="handleLogout()">
+                    <span>🚪 Sign Out</span>
+                </button>
             </div>
         </aside>
 
         <!-- MAIN CONTENT AREA -->
         <main class="main-content">
-            <!-- TOP BAR -->
-            <header class="topbar">
-                <div class="header-titles">
-                    <h1 id="page-title">🩺 Patient Assessment & Multi-Modal Scoring</h1>
-                    <p id="page-desc">Ingests psychometric items, lifestyle biomarkers, and real-time clinical NLP text.</p>
+            
+            <!-- Top Header Bar -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h1 id="page-main-title">Patient Registry Dashboard</h1>
+                    <p id="page-subtitle">Enrolled Adolescent Patients & Continuous Risk Monitoring</p>
                 </div>
-                <div class="topbar-actions">
-                    <span class="badge" id="model-status-badge">4-Model Ensemble: Ready</span>
-                    <button class="btn btn-secondary" id="reset-btn">Reset Values</button>
+                <div class="header-right">
+                    <button class="btn btn-secondary" id="top-add-patient-btn" onclick="openAddPatientModal()">
+                        <span>➕ Add New Patient</span>
+                    </button>
+                    <button class="btn btn-outline" onclick="exportActiveRecord()">
+                        <span>📥 Export FHIR JSON</span>
+                    </button>
+                    <button class="btn btn-primary" onclick="window.print()">
+                        <span>🖨️ Print Clinical Summary</span>
+                    </button>
                 </div>
             </header>
 
-            <!-- TAB 1: LIVE ASSESSMENT -->
-            <section id="tab-assessment" class="tab-pane active">
-                <div class="grid-2col">
-                    <!-- Left: Questionnaire & Lifestyle Inputs -->
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>1. Standardized Clinical Questionnaires</h3>
-                            <span class="hint">0=Not at all, 1=Several days, 2=More than half, 3=Nearly every day</span>
-                        </div>
-
-                        <div class="q-group">
-                            <h4>Depression & Mood Symptoms (PHQ-9 Items)</h4>
-                            <div class="slider-row">
-                                <label>Little interest or pleasure in doing things (Anhedonia):</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q1" min="0" max="3" value="3">
-                                    <span class="val" id="val-q1">3</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Feeling down, depressed, or hopeless:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q2" min="0" max="3" value="3">
-                                    <span class="val" id="val-q2">3</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Feeling bad about yourself, or that you are a failure:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q6" min="0" max="3" value="3">
-                                    <span class="val" id="val-q6">3</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="q-group">
-                            <h4>Anxiety & Somatic Symptoms (GAD-7 / SCARED Items)</h4>
-                            <div class="slider-row">
-                                <label>Feeling nervous, anxious, or on edge:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q8" min="0" max="3" value="2">
-                                    <span class="val" id="val-q8">2</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Not being able to stop or control worrying:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q9" min="0" max="3" value="2">
-                                    <span class="val" id="val-q9">2</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Trouble relaxing, feeling restless:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q10" min="0" max="3" value="2">
-                                    <span class="val" id="val-q10">2</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Somatic complaints (Headaches, nausea, fatigue):</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q5" min="0" max="3" value="2">
-                                    <span class="val" id="val-q5">2</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Trouble concentrating on schoolwork or reading:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q7" min="0" max="3" value="2">
-                                    <span class="val" id="val-q7">2</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="q-group">
-                            <h4>Sleep Disruption (ISI Items)</h4>
-                            <div class="slider-row">
-                                <label>Trouble falling or staying asleep (Insomnia):</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q3" min="0" max="3" value="3">
-                                    <span class="val" id="val-q3">3</span>
-                                </div>
-                            </div>
-                            <div class="slider-row">
-                                <label>Feeling tired or having little energy during daytime:</label>
-                                <div class="slider-control">
-                                    <input type="range" id="q4" min="0" max="3" value="2">
-                                    <span class="val" id="val-q4">2</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="section-heading" style="margin-top:20px;">
-                            <h3>2. Behavioral & Lifestyle Biomarkers</h3>
-                        </div>
-                        <div class="grid-2col-compact">
-                            <div class="input-box">
-                                <label>Sleep Duration (Hours):</label>
-                                <input type="number" id="bio-sleep" value="4.0" step="0.5" min="2" max="14">
-                            </div>
-                            <div class="input-box">
-                                <label>Screen Time (Hours/Day):</label>
-                                <input type="number" id="bio-screen" value="9.0" step="0.5" min="0" max="16">
-                            </div>
-                            <div class="input-box">
-                                <label>Physical Activity (Mins/Day):</label>
-                                <input type="number" id="bio-exercise" value="5" step="5" min="0" max="180">
-                            </div>
-                            <div class="input-box">
-                                <label>Social Meetups (Peer count):</label>
-                                <input type="number" id="bio-social" value="1" step="1" min="0" max="10">
-                            </div>
-                        </div>
-                        <div class="checkbox-row">
-                            <input type="checkbox" id="bio-appetite" checked>
-                            <label for="bio-appetite">Notable appetite / significant weight change reported</label>
+            <!-- =================================================================
+                 VIEW 1: DOCTOR PATIENT REGISTRY (List of All Patients)
+                 ================================================================= -->
+            <div id="doctor-registry-view" class="view-panel active">
+                
+                <!-- Registry Metric Stat Cards -->
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-icon blue">👥</div>
+                        <div class="metric-data">
+                            <span class="metric-val" id="stat-total-patients">4</span>
+                            <span class="metric-lbl">Total Enrolled Patients</span>
                         </div>
                     </div>
-
-                    <!-- Right: NLP Journal + Real-Time Result Cards -->
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>3. Clinical Journal & Natural Language Processing</h3>
+                    <div class="metric-card">
+                        <div class="metric-icon red">🚨</div>
+                        <div class="metric-data">
+                            <span class="metric-val" id="stat-critical-alerts">1</span>
+                            <span class="metric-lbl">High / Crisis Risk Alerts</span>
                         </div>
-
-                        <div class="journal-box">
-                            <label for="journal-text">Patient's Daily Self-Report / Journal Entry:</label>
-                            <textarea id="journal-text" rows="4" placeholder="Type or paste patient self-report...">I can't cope with everything anymore. Feeling completely hopeless and exhausted. I don't want to get out of bed.</textarea>
-                            <div class="nlp-stats">
-                                <span>Sentiment: <b id="nlp-score">15/100</b></span>
-                                <span>Emotion: <b id="nlp-emotion">Distress</b></span>
-                                <span>Variance: <b id="nlp-variance">±12.4</b></span>
-                            </div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon orange">⚡</div>
+                        <div class="metric-data">
+                            <span class="metric-val" id="stat-avg-score">53.0</span>
+                            <span class="metric-lbl">Cohort Avg Risk Index</span>
                         </div>
-
-                        <!-- Emergency Crisis Alert Box -->
-                        <div id="crisis-alert" class="crisis-banner">
-                            <div class="crisis-icon">🚨</div>
-                            <div class="crisis-body">
-                                <h4>IMMEDIATE CRISIS ALERT TRIGGERED</h4>
-                                <p id="crisis-reason">High-risk crisis language detected: <b>"can't cope", "hopeless"</b></p>
-                                <p class="hotline">Immediate clinical action required. Crisis Line: <b>Tele-MANAS (14416) / iCall (9152987821)</b></p>
-                            </div>
-                        </div>
-
-                        <div class="section-heading" style="margin-top:20px;">
-                            <h3>4. Smart Health Risk Assessment Result</h3>
-                        </div>
-
-                        <div class="score-card">
-                            <div class="score-header">
-                                <span class="badge badge-severe" id="risk-badge">Tier 4: High Risk</span>
-                                <span class="ci-text" id="ci-text">95% CI: [71.2 – 76.8]</span>
-                            </div>
-                            <div class="score-display">
-                                <span class="big-score" id="composite-score">74</span>
-                                <span class="max-score">/ 100</span>
-                            </div>
-                            <p class="score-desc" id="risk-desc">High clinical risk. Prioritize clinical safety review and formal psychiatric assessment.</p>
-                            <div class="uncertainty-pill" id="uncertainty-rating">
-                                🎯 <b>Uncertainty Rating:</b> High Confidence (std: ±1.4 pts)
-                            </div>
-                        </div>
-
-                        <div class="chart-container" style="margin-top:15px; height: 260px;">
-                            <canvas id="radarChart"></canvas>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-icon green">🛡️</div>
+                        <div class="metric-data">
+                            <span class="metric-val">100%</span>
+                            <span class="metric-lbl">On-Device Privacy</span>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- TAB 2: 4-MODEL ENSEMBLE -->
-            <section id="tab-ensemble" class="tab-pane">
-                <div class="grid-2col">
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>4-Model Stacked Ensemble Architecture</h3>
-                            <span class="hint">Specialist Networks + FusionNet Meta-Learner</span>
-                        </div>
-                        <table class="clinical-table">
-                            <thead>
-                                <tr>
-                                    <th>Model Name</th>
-                                    <th>Domain Focus</th>
-                                    <th>Ensemble Weight</th>
-                                    <th>Score Output</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ensemble-table-body">
-                                <!-- Populated dynamically -->
-                            </tbody>
-                        </table>
-                        <div class="chart-container" style="margin-top:20px; height:240px;">
-                            <canvas id="ensembleBarChart"></canvas>
+                <!-- Patient Filter & Search Toolbar -->
+                <div class="registry-toolbar">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="patient-search-input" placeholder="Search patient by name, ID, or clinical concern..." oninput="filterPatientRegistry()">
+                    </div>
+                    <div class="filter-group">
+                        <label for="filter-risk-select">Filter Risk Level:</label>
+                        <select id="filter-risk-select" onchange="filterPatientRegistry()">
+                            <option value="ALL">All Risk Tiers</option>
+                            <option value="SEVERE">Severe Risk (75 - 100)</option>
+                            <option value="HIGH">High Risk (50 - 74)</option>
+                            <option value="MODERATE">Moderate Risk (25 - 49)</option>
+                            <option value="LOW">Low / Minimal (0 - 24)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="openAddPatientModal()">
+                        <span>➕ Enroll Patient</span>
+                    </button>
+                </div>
+
+                <!-- Patient Cards Grid -->
+                <div class="patient-cards-grid" id="patient-cards-container">
+                    <!-- Dynamically Injected via app.js -->
+                </div>
+            </div>
+
+
+            <!-- =================================================================
+                 VIEW 2: INDIVIDUAL PATIENT CLINICAL DOSSIER & ASSESSMENT
+                 ================================================================= -->
+            <div id="doctor-patient-detail-view" class="view-panel" style="display: none;">
+                
+                <!-- Active Patient Dossier Header Banner -->
+                <div class="active-patient-banner">
+                    <div class="banner-left">
+                        <button class="back-btn" onclick="showDoctorRegistry()">
+                            ← Back to Registry
+                        </button>
+                        <div class="active-patient-avatar" id="dossier-avatar">👤</div>
+                        <div class="active-patient-details">
+                            <h2 id="dossier-patient-name">Meera Patel</h2>
+                            <p id="dossier-patient-sub">16y Female | ID: PT-1002 | Primary: Severe Depressive Episode & Sleep Debt</p>
                         </div>
                     </div>
-
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>Monte Carlo Dropout Uncertainty Distribution</h3>
-                            <span class="hint">20 Stochastic Passes at Test-Time</span>
-                        </div>
-                        <div class="info-card">
-                            <p>Standard neural networks are often overconfident. Our engine keeps dropout active during inference across <b>20 stochastic forward passes</b> to quantify model epistemic uncertainty.</p>
-                            <div class="mc-metrics">
-                                <div class="mc-metric-item">
-                                    <span class="label">Empirical Mean (μ):</span>
-                                    <span class="val" id="mc-mean">74.0 pts</span>
-                                </div>
-                                <div class="mc-metric-item">
-                                    <span class="label">Standard Deviation (σ):</span>
-                                    <span class="val" id="mc-std">±1.4 pts</span>
-                                </div>
-                                <div class="mc-metric-item">
-                                    <span class="label">95% Confidence Interval:</span>
-                                    <span class="val" id="mc-ci">[71.2 – 76.8]</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="chart-container" style="margin-top:15px; height:240px;">
-                            <canvas id="mcHistogramChart"></canvas>
+                    <div class="banner-right">
+                        <div class="quick-switch-box">
+                            <label for="dossier-patient-dropdown">Switch Patient:</label>
+                            <select id="dossier-patient-dropdown" onchange="selectPatientFromDropdown(this.value)">
+                                <!-- Dynamically populated -->
+                            </select>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- TAB 3: SHAP EXPLAINABILITY -->
-            <section id="tab-shap" class="tab-pane">
-                <div class="grid-2col">
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>Explainable AI (XAI) Decomposition</h3>
-                            <span class="hint">Permutation SHAP Feature Attribution</span>
+                <!-- Sub-Navigation Tab Buttons for Active Patient -->
+                <div class="dossier-subtabs">
+                    <button class="subtab-btn active" id="dossier-tab-btn-assessment" onclick="switchDossierTab('assessment')">
+                        📝 Multimodal Assessment Form
+                    </button>
+                    <button class="subtab-btn" id="dossier-tab-btn-ensemble" onclick="switchDossierTab('ensemble')">
+                        🧠 4-Model Ensemble & 95% CI
+                    </button>
+                    <button class="subtab-btn" id="dossier-tab-btn-shap" onclick="switchDossierTab('shap')">
+                        🔍 Permutation SHAP XAI
+                    </button>
+                    <button class="subtab-btn" id="dossier-tab-btn-trajectory" onclick="switchDossierTab('trajectory')">
+                        📈 Longitudinal Trajectory
+                    </button>
+                    <button class="subtab-btn" id="dossier-tab-btn-cbt" onclick="switchDossierTab('cbt')">
+                        🛡️ CBT Action Plans
+                    </button>
+                </div>
+
+                <!-- TAB 1: LIVE ASSESSMENT & MULTIMODAL INTAKE -->
+                <section id="tab-assessment" class="tab-content active">
+                    <div class="grid-2-col">
+                        
+                        <!-- Left Column: Clinical Questionnaires & Biometrics -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>📋 Psychometric Scoring & Lifestyle Inputs</h3>
+                                <span class="badge badge-info">23 Multimodal Features</span>
+                            </div>
+                            
+                            <form id="assessment-form" onsubmit="event.preventDefault(); runClinicalAssessment();">
+                                
+                                <div class="section-title">1. Standardized Psychometrics (0 = None, 3 = Severe)</div>
+                                
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>PHQ-1: Depressed / Down Mood:</span>
+                                        <b id="val-q1">3</b>
+                                    </div>
+                                    <input type="range" id="q1" min="0" max="3" value="3" class="slider" oninput="updateSliderDisplay(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>PHQ-2: Anhedonia (Loss of Interest):</span>
+                                        <b id="val-q2">3</b>
+                                    </div>
+                                    <input type="range" id="q2" min="0" max="3" value="3" class="slider" oninput="updateSliderDisplay(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>PHQ-3: Chronic Fatigue & Low Energy:</span>
+                                        <b id="val-q3">2</b>
+                                    </div>
+                                    <input type="range" id="q3" min="0" max="3" value="2" class="slider" oninput="updateSliderDisplay(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>GAD-1: Uncontrollable Nervousness & Worry:</span>
+                                        <b id="val-q4">3</b>
+                                    </div>
+                                    <input type="range" id="q4" min="0" max="3" value="3" class="slider" oninput="updateSliderDisplay(this)">
+                                </div>
+                                <div class="slider-group">
+                                    <div class="slider-label">
+                                        <span>GAD-2: Restlessness & Difficulty Relaxing:</span>
+                                        <b id="val-q5">2</b>
+                                    </div>
+                                    <input type="range" id="q5" min="0" max="3" value="2" class="slider" oninput="updateSliderDisplay(this)">
+                                </div>
+
+                                <div class="section-title">2. Passive Behavioral & Circadian Biomarkers</div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="bio-sleep">Nightly Sleep Duration (Hours):</label>
+                                        <input type="number" id="bio-sleep" min="2" max="14" step="0.5" value="4.5" class="input-field" onchange="runClinicalAssessment()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bio-screen">Daily Screen Time (Hours):</label>
+                                        <input type="number" id="bio-screen" min="0" max="18" step="0.5" value="9.0" class="input-field" onchange="runClinicalAssessment()">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="bio-exercise">Physical Activity (Mins/Day):</label>
+                                        <input type="number" id="bio-exercise" min="0" max="180" step="5" value="10" class="input-field" onchange="runClinicalAssessment()">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bio-social">Daily Social Interactions (Count):</label>
+                                        <input type="number" id="bio-social" min="0" max="15" value="1" class="input-field" onchange="runClinicalAssessment()">
+                                    </div>
+                                </div>
+
+                                <div class="section-title">3. Free-Text Patient Journal Entry (NLP Sentiment & Crisis)</div>
+                                <div class="form-group">
+                                    <textarea id="journal-input" rows="4" class="textarea-field" placeholder="Patient's journal entry or clinician observation notes..." oninput="analyzeJournalLive()"></textarea>
+                                    <div id="crisis-alert-inline" class="crisis-banner-inline" style="display: none;">
+                                        🚨 <b>CRISIS KEYWORD DETECTED:</b> Immediate safety review recommended.
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn btn-primary btn-block" onclick="runClinicalAssessment()">
+                                    <span>🧠 Recompute Multi-Model Risk Index</span>
+                                </button>
+                            </form>
                         </div>
-                        <div class="shap-breakdown-card">
-                            <div class="shap-math-row">
-                                <div class="math-col">
-                                    <span class="label">ADMRI Score</span>
-                                    <span class="num text-accent" id="shap-score">74</span>
+
+                        <!-- Right Column: Live Inferred Summary -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>📊 Real-Time Clinical Inference</h3>
+                                <span class="badge badge-success" id="inf-time-badge">Latency: 14ms</span>
+                            </div>
+
+                            <div class="gauge-container">
+                                <div class="gauge-circle" id="risk-circle-gauge">
+                                    <div class="gauge-inner">
+                                        <span class="gauge-score" id="inf-risk-score">78</span>
+                                        <span class="gauge-scale">/ 100</span>
+                                    </div>
                                 </div>
-                                <div class="math-op">=</div>
-                                <div class="math-col">
-                                    <span class="label">Patient Baseline</span>
-                                    <span class="num text-muted" id="shap-baseline">50</span>
+                                <div class="gauge-meta">
+                                    <div class="risk-badge severe" id="inf-risk-badge">SEVERE RISK</div>
+                                    <div class="ci-badge" id="inf-ci-badge">95% CI: [72.4 – 83.6]</div>
+                                    <p class="gauge-summary" id="inf-risk-summary">
+                                        Composite score indicates pronounced depressive affect and chronic circadian disruptions.
+                                    </p>
                                 </div>
-                                <div class="math-op">+</div>
-                                <div class="math-col">
-                                    <span class="label">Feature Impact</span>
-                                    <span class="num text-danger" id="shap-delta">+24.0</span>
-                                </div>
+                            </div>
+
+                            <div class="section-title">Multimodal Domain Radar</div>
+                            <div class="chart-box">
+                                <canvas id="radarChart"></canvas>
+                            </div>
+
+                            <div class="button-row">
+                                <button class="btn btn-secondary btn-block" onclick="switchDossierTab('ensemble')">
+                                    <span>Inspect 4-Model Ensemble & UQ →</span>
+                                </button>
                             </div>
                         </div>
 
-                        <div class="shap-lists">
-                            <div class="shap-subgroup">
-                                <h4>🔺 Top Factors Elevating Risk:</h4>
-                                <div id="risk-factors-list"></div>
+                    </div>
+                </section>
+
+                <!-- TAB 2: 4-MODEL STACKED ENSEMBLE & UNCERTAINTY QUANTIFICATION -->
+                <section id="tab-ensemble" class="tab-content">
+                    <div class="grid-2-col">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🧠 4-Model Ensemble Subnet Decompositions</h3>
+                                <span class="badge badge-info">Stacked Generalization</span>
                             </div>
-                            <div class="shap-subgroup" style="margin-top:15px;">
-                                <h4>🛡️ Top Mitigating / Protective Factors:</h4>
-                                <div id="protective-factors-list"></div>
+                            <p class="card-description">
+                                Specialist neural subnets process domain-specific representations before passing latent embeddings into the <b>FusionNet Meta-Learner</b>.
+                            </p>
+                            <div class="chart-box">
+                                <canvas id="ensembleBarChart"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3>🎯 Monte Carlo Dropout Uncertainty (T = 20)</h3>
+                                <span class="badge badge-warning">Epistemic UQ</span>
+                            </div>
+                            <p class="card-description">
+                                Stochastic test-time dropout sampling generates empirical predictive variance and calibrated 95% Confidence Interval bounds.
+                            </p>
+                            <div class="chart-box">
+                                <canvas id="mcHistChart"></canvas>
                             </div>
                         </div>
                     </div>
+                </section>
 
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>Feature Attribution Waterfall / Impact Chart</h3>
+                <!-- TAB 3: PERMUTATION SHAP EXPLAINABILITY -->
+                <section id="tab-shap" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🔍 Permutation SHAP Feature Attribution Waterfall</h3>
+                            <span class="badge badge-info">Explainable AI (XAI)</span>
                         </div>
-                        <div class="chart-container" style="height:420px;">
+                        <p class="card-description">
+                            Decomposes patient risk into directional positive (risk-amplifying) and negative (protective) Shapley value contributions across all 23 clinical features.
+                        </p>
+                        <div class="chart-box-large">
                             <canvas id="shapBarChart"></canvas>
                         </div>
                     </div>
-                </div>
-            </section>
+                </section>
 
-            <!-- TAB 4: TRAJECTORY & ANOMALY -->
-            <section id="tab-trajectory" class="tab-pane">
-                <div class="grid-2col">
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>Longitudinal Risk Progression & 30-Day Forecast</h3>
-                            <span class="hint">Linear Regression + EWMA (alpha=0.4)</span>
+                <!-- TAB 4: LONGITUDINAL TRAJECTORY & ANOMALY DETECTION -->
+                <section id="tab-trajectory" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📈 Historical Trajectory & Statistical Anomaly Alerts</h3>
+                            <span class="badge badge-info">Longitudinal Tracking</span>
                         </div>
-                        <div class="chart-container" style="height:340px;">
+                        <p class="card-description">
+                            Tracks the patient's risk trajectory across sequential sessions. Automated tripwires trigger when risk spikes exceed <b>1.5 standard deviations (σ)</b> above baseline.
+                        </p>
+                        <div class="chart-box-large">
                             <canvas id="trajectoryChart"></canvas>
                         </div>
                     </div>
+                </section>
 
-                    <div class="panel">
-                        <div class="section-heading">
-                            <h3>Predictive Insights & Anomaly Triggers</h3>
+                <!-- TAB 5: EVIDENCE-BASED CBT INTERVENTIONS -->
+                <section id="tab-cbt" class="tab-content">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🛡️ Tailored Cognitive Behavioral Therapy (CBT) Triage</h3>
+                            <span class="badge badge-success">Evidence-Based</span>
                         </div>
-                        <div class="forecast-box">
-                            <h4>Next-Session Projected Trajectory</h4>
-                            <div class="forecast-val" id="forecast-val">77.5 <span style="font-size:16px; color:#94A3B8;">pts</span></div>
-                            <p id="forecast-trend"><b>Trend:</b> Worsening (Upward Trend)</p>
-                            <p id="forecast-slope"><b>Slope:</b> +4.2 pts / session</p>
-                            <p class="ci-text" id="forecast-bounds">Bounds: [73.0 – 82.0]</p>
+                        <p class="card-description">
+                            Prescribes targeted clinical interventions matched dynamically to the patient's dominant risk dimensions.
+                        </p>
+                        <div class="cbt-cards-grid" id="cbt-plans-container">
+                            <!-- Injected via JavaScript -->
                         </div>
+                    </div>
+                </section>
 
-                        <div id="anomaly-box" class="anomaly-card">
-                            <h4>⚠️ Notable Statistical Shift Detected</h4>
-                            <p id="anomaly-msg">Score jumped +14 pts (2.3σ above moving baseline).</p>
+            </div>
+
+
+            <!-- =================================================================
+                 VIEW 3: PATIENT SELF-ASSESSMENT PORTAL (For Logged-in Patients)
+                 ================================================================= -->
+            <div id="patient-portal-view" class="view-panel" style="display: none;">
+                
+                <div class="patient-welcome-banner">
+                    <div class="welcome-text">
+                        <h2 id="patient-portal-welcome-name">Hello, Aarav! 👋</h2>
+                        <p>Welcome to your personal wellness check-in. All information stays private on your device.</p>
+                    </div>
+                    <div class="wellness-streak-badge">
+                        <span>🔥 5-Day Check-in Streak!</span>
+                    </div>
+                </div>
+
+                <div class="grid-2-col">
+                    <!-- Self Check Form -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🧘 Daily Self-Check</h3>
+                            <span class="badge badge-info">Confidential</span>
+                        </div>
+                        <form id="patient-self-form" onsubmit="event.preventDefault(); submitPatientSelfCheck();">
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>How is your energy & mood today?</span>
+                                    <b id="pat-val-mood">Good</b>
+                                </div>
+                                <input type="range" id="pat-slider-mood" min="0" max="3" value="1" class="slider" oninput="updatePatSlider(this)">
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>How well did you sleep last night?</span>
+                                    <b id="pat-val-sleep">7 Hours</b>
+                                </div>
+                                <input type="range" id="pat-slider-sleep" min="3" max="12" value="7" class="slider" oninput="updatePatSleep(this)">
+                            </div>
+                            <div class="slider-group">
+                                <div class="slider-label">
+                                    <span>Are you feeling anxious or stressed about school?</span>
+                                    <b id="pat-val-stress">Mild</b>
+                                </div>
+                                <input type="range" id="pat-slider-stress" min="0" max="3" value="1" class="slider" oninput="updatePatStress(this)">
+                            </div>
+                            <div class="form-group">
+                                <label for="pat-journal-text">Write your thoughts or reflections for today:</label>
+                                <textarea id="pat-journal-text" rows="3" class="textarea-field" placeholder="How are you feeling? Anything on your mind?"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                <span>Save Daily Check-in</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Personal Wellness Meter & Tips -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🌱 Your Wellness Insights</h3>
+                            <span class="badge badge-success">Safe & Balanced</span>
+                        </div>
+                        <div class="patient-wellness-box">
+                            <div class="wellness-icon">🌟</div>
+                            <h3 id="patient-wellness-status">You're doing great!</h3>
+                            <p id="patient-wellness-msg">Your sleep duration is healthy and your stress level is within balanced limits.</p>
+                        </div>
+                        <div class="section-title">Recommended Daily Coping Exercise</div>
+                        <div class="patient-coping-card">
+                            <h4>🌬️ 4-7-8 Deep Breathing Exercise</h4>
+                            <p>Inhale through nose for 4 seconds, hold breath for 7 seconds, exhale slowly through mouth for 8 seconds. Repeat 4 times.</p>
                         </div>
                     </div>
                 </div>
-            </section>
 
-            <!-- TAB 5: CBT INTERVENTIONS -->
-            <section id="tab-cbt" class="tab-pane">
-                <div class="panel">
-                    <div class="section-heading">
-                        <h3>Evidence-Based CBT Intervention Protocols</h3>
-                        <span class="hint">Tailored to Dominant Symptom Profile</span>
-                    </div>
-                    <div class="cbt-cards-grid" id="cbt-container">
-                        <!-- Populated by JS -->
-                    </div>
+            </div>
 
-                    <div class="export-banner" style="margin-top:25px;">
-                        <div>
-                            <h4>Export Standard Clinical Summary</h4>
-                            <p>Generates HL7 FHIR DiagnosticReport JSON standard payload for Electronic Health Records.</p>
-                        </div>
-                        <button class="btn btn-primary" id="export-json-btn">📥 Download FHIR JSON</button>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
 
-    <!-- Core Scripts -->
-    <script src="js/nlp_engine.js"></script>
+
+    <!-- =========================================================================
+         MODAL 1: ENROLL / ADD NEW PATIENT MODAL
+         ========================================================================= -->
+    <div id="add-patient-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>➕ Enroll New Adolescent Patient</h3>
+                <button type="button" class="modal-close" onclick="closeAddPatientModal()">×</button>
+            </div>
+            <form id="new-patient-form" onsubmit="handleAddNewPatient(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new-pat-name">Patient Full Name</label>
+                        <input type="text" id="new-pat-name" placeholder="e.g. Diya Sen" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-pat-age">Age (10 – 18)</label>
+                        <input type="number" id="new-pat-age" min="10" max="18" value="15" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="new-pat-gender">Gender</label>
+                        <select id="new-pat-gender">
+                            <option value="Female">Female</option>
+                            <option value="Male">Male</option>
+                            <option value="Non-Binary">Non-Binary</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="new-pat-id">Assigned Patient ID</label>
+                        <input type="text" id="new-pat-id" placeholder="e.g. PT-1005" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="new-pat-concern">Primary Clinical Concern / Referral Notes</label>
+                    <input type="text" id="new-pat-concern" placeholder="e.g. Social anxiety, insomnia, scholastic performance decline" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-pat-risk-preset">Initial Assessment Baseline Preset</label>
+                    <select id="new-pat-risk-preset">
+                        <option value="MODERATE">Moderate Risk Baseline (Score ~45)</option>
+                        <option value="HIGH">High Risk Baseline (Score ~70)</option>
+                        <option value="LOW">Low / Healthy Baseline (Score ~18)</option>
+                        <option value="SEVERE">Severe Risk Baseline (Score ~85)</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" onclick="closeAddPatientModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><span>Enroll Patient into Registry</span></button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- =========================================================================
+         MODAL 2: 24/7 EMERGENCY CRISIS HELPLINE SUPPORT MODAL
+         ========================================================================= -->
+    <div id="crisis-emergency-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-dialog crisis-modal">
+            <div class="modal-header">
+                <h3>🚨 Immediate Crisis Support Resources</h3>
+                <button type="button" class="modal-close" onclick="closeCrisisModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="crisis-intro">If you or someone you know is in acute distress or having thoughts of self-harm, confidential free support is available 24/7:</p>
+                <div class="helpline-cards">
+                    <div class="helpline-card">
+                        <div class="helpline-icon">📞</div>
+                        <div class="helpline-info">
+                            <h4>KIRAN Mental Health Helpline (Govt of India)</h4>
+                            <span class="helpline-num">1800-599-0019</span>
+                            <span class="helpline-meta">24/7 Free & Confidential | 13 Languages</span>
+                        </div>
+                    </div>
+                    <div class="helpline-card">
+                        <div class="helpline-icon">💬</div>
+                        <div class="helpline-info">
+                            <h4>Tele-MANAS National Helpline</h4>
+                            <span class="helpline-num">14416 / 1800-891-4416</span>
+                            <span class="helpline-meta">National Mental Health Program Initiative</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeCrisisModal()">I Understand & Acknowledge</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="js/feature_engineering.js"></script>
     <script src="js/ensemble_engine.js"></script>
     <script src="js/shap_explainer.js"></script>
+    <script src="js/nlp_engine.js"></script>
     <script src="js/cbt_library.js"></script>
     <script src="js/app.js"></script>
 </body>
