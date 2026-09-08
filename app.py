@@ -423,7 +423,7 @@ elif selected_nav == "🔍 Explainable AI (SHAP Analysis)":
 # ==============================================================================
 elif selected_nav == "📈 Trajectory & Anomaly Tracking":
     st.header("📈 Longitudinal Trajectory Forecasting & Anomaly Tracking")
-    st.write("Tracks patient history across sessions, generates 30-day linear/EWMA forecasts, and detects statistical spikes ($|z| \ge 2\sigma$).")
+    st.write(r"Tracks patient history across sessions, generates 30-day linear/EWMA forecasts, and detects statistical spikes ($|z| \ge 2\sigma$).")
 
     history = current_preset["history"].copy()
     forecast_info = ensemble.forecast_trajectory(history)
