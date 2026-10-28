@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # 1. SHRI Clinical Decision REST Microservice
+  shri-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shri_decision_service
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - APP_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # 2. In-Memory Cache for Session Telemetry
+  shri-cache:
+    image: redis:7-alpine
+    container_name: shri_session_cache
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+
+  # 3. Static Web Application Gateway
+  shri-web:
+    image: nginx:alpine
+    container_name: shri_web_gateway
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    depends_on:
+      - shri-api
